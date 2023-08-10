@@ -8,37 +8,48 @@ import (
 	"net/http"
 	"os"
 
+	"flyscrape/flyscrape"
 	"flyscrape/js"
 )
 
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "Please provide a file to run.")
-		os.Exit(1)
+		exit("Please provide a file to run.")
 	}
 
-	opts, run, err := js.Compile(os.Args[1])
+	opts, scrape, err := js.Compile(os.Args[1])
 	if err != nil {
-		panic(err)
+		exit(fmt.Sprintf("Error compiling JavaScript file: %v", err))
 	}
 
-	resp, err := http.Get(opts.URL)
+	svc := flyscrape.Service{
+		ScrapeOptions: *opts,
+		ScrapeFunc:    scrape,
+		FetchFunc: func(url string) (string, error) {
+			resp, err := http.Get(url)
+			if err != nil {
+				return "", err
+			}
+			defer resp.Body.Close()
+
+			data, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return "", err
+			}
+			return string(data), nil
+		},
+	}
+	results := svc.Scrape()
 	if err != nil {
-		panic(err)
 	}
-	defer resp.Body.Close()
+	fmt.Printf("%T\n", results[0])
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
+	data, _ := json.MarshalIndent(results, "", "  ")
+	fmt.Println(string(data))
+	return
+}
 
-	out := run(js.RunOptions{HTML: string(body)})
-
-	j, err := json.MarshalIndent(out, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(j))
+func exit(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
 }

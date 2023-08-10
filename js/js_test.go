@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"flyscrape/flyscrape"
 	"flyscrape/js"
 
 	"github.com/stretchr/testify/require"
@@ -13,12 +14,15 @@ import (
 func TestV8(t *testing.T) {
 	opts, run, err := js.Compile("../examples/esbuild.github.io.js")
 	require.NoError(t, err)
+	require.NotNil(t, opts)
+	require.NotNil(t, run)
 
 	html := fetch(opts.URL)
-	json := run(js.RunOptions{
+	json, err := run(flyscrape.ScrapeParams{
 		HTML: html,
 	})
 
+	require.NoError(t, err)
 	t.Log(json)
 }
 

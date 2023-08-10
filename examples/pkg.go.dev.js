@@ -5,10 +5,8 @@ export const options = {
 }
 
 export default function({ html }) {
-    console.log("start")
     const $ = parse(html);
-    console.log("done")
-
+    
     return {
         package: $('h1').text().trim(),
         meta: {
