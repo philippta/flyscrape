@@ -22,18 +22,18 @@ type ScrapeOptions struct {
 }
 
 type ScrapeResult struct {
-	URL  string
-	Data M
-	Err  error
+	URL   string   `json:"url"`
+	Data  any      `json:"data,omitempty"`
+	Links []string `json:"-"`
+	Error error    `json:"error,omitempty"`
 }
 
 type (
-	M          map[string]any
-	ScrapeFunc func(ScrapeParams) (M, error)
+	ScrapeFunc func(ScrapeParams) (any, error)
 	FetchFunc  func(url string) (string, error)
 )
 
-type Service struct {
+type Scraper struct {
 	ScrapeOptions ScrapeOptions
 	ScrapeFunc    ScrapeFunc
 	FetchFunc     FetchFunc
@@ -50,17 +50,17 @@ type target struct {
 
 type result struct {
 	url   string
-	data  M
+	data  any
 	links []string
 	err   error
 }
 
-func (s *Service) Scrape() <-chan ScrapeResult {
+func (s *Scraper) Scrape() <-chan ScrapeResult {
 	if s.Concurrency == 0 {
 		s.Concurrency = 1
 	}
 
-	jobs := make(chan target, 10)
+	jobs := make(chan target, 1024)
 	results := make(chan result)
 	scraperesults := make(chan ScrapeResult)
 	s.visited = hashmap.New[string, struct{}]()
@@ -82,9 +82,10 @@ func (s *Service) Scrape() <-chan ScrapeResult {
 	go func() {
 		for res := range results {
 			scraperesults <- ScrapeResult{
-				URL:  res.url,
-				Data: res.data,
-				Err:  res.err,
+				URL:   res.url,
+				Data:  res.data,
+				Links: res.links,
+				Error: res.err,
 			}
 		}
 		close(scraperesults)
@@ -93,23 +94,24 @@ func (s *Service) Scrape() <-chan ScrapeResult {
 	return scraperesults
 }
 
-func (s *Service) worker(id int, jobs chan target, results chan<- result) {
+func (s *Scraper) worker(id int, jobs chan target, results chan<- result) {
 	for j := range jobs {
 		res := s.process(j)
 
-		for _, l := range res.links {
-			if _, ok := s.visited.Get(l); ok {
-				continue
-			}
+		if j.depth > 0 {
+			for _, l := range res.links {
+				if _, ok := s.visited.Get(l); ok {
+					continue
+				}
 
-			s.wg.Add(1)
-
-			select {
-			case jobs <- target{url: l, depth: j.depth - 1}:
-				s.visited.Set(l, struct{}{})
-			default:
-				log.Println("queue is full, can't add url:", l)
-				s.wg.Done()
+				s.wg.Add(1)
+				select {
+				case jobs <- target{url: l, depth: j.depth - 1}:
+					s.visited.Set(l, struct{}{})
+				default:
+					log.Println("queue is full, can't add url:", l)
+					s.wg.Done()
+				}
 			}
 		}
 
@@ -118,7 +120,7 @@ func (s *Service) worker(id int, jobs chan target, results chan<- result) {
 	}
 }
 
-func (s *Service) process(job target) result {
+func (s *Scraper) process(job target) result {
 	html, err := s.FetchFunc(job.url)
 	if err != nil {
 		return result{url: job.url, err: err}

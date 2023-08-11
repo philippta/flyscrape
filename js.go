@@ -1,16 +1,14 @@
-package js
+package flyscrape
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 	"strings"
 	"time"
 
-	"flyscrape/flyscrape"
-	"flyscrape/js/jsbundle"
+	"flyscrape/js"
 
 	"github.com/evanw/esbuild/pkg/api"
 	v8 "rogchap.com/v8go"
@@ -20,21 +18,16 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func Compile(file string) (*flyscrape.ScrapeOptions, flyscrape.ScrapeFunc, error) {
-	src, err := build(file)
+func Compile(src string) (ScrapeOptions, ScrapeFunc, error) {
+	src, err := build(src)
 	if err != nil {
-		return nil, nil, err
+		return ScrapeOptions{}, nil, err
 	}
 	return vm(src)
 }
 
-func build(file string) (string, error) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		return "", fmt.Errorf("read %q: %w", file, err)
-	}
-
-	res := api.Transform(string(data), api.TransformOptions{
+func build(src string) (string, error) {
+	res := api.Transform(src, api.TransformOptions{
 		Platform: api.PlatformBrowser,
 		Format:   api.FormatIIFE,
 	})
@@ -50,43 +43,44 @@ func build(file string) (string, error) {
 	return string(res.Code), nil
 }
 
-func vm(src string) (*flyscrape.ScrapeOptions, flyscrape.ScrapeFunc, error) {
+func vm(src string) (ScrapeOptions, ScrapeFunc, error) {
 	ctx := v8.NewContext()
 	ctx.RunScript("var module = {}", "main.js")
 
-	if _, err := ctx.RunScript(removeIIFE(jsbundle.Flyscrape), "main.js"); err != nil {
-		return nil, nil, fmt.Errorf("run bundled js: %w", err)
+	if _, err := ctx.RunScript(removeIIFE(js.Flyscrape), "main.js"); err != nil {
+		return ScrapeOptions{}, nil, fmt.Errorf("running flyscrape bundle: %w", err)
 	}
 	if _, err := ctx.RunScript(`const require = () => require_flyscrape();`, "main.js"); err != nil {
-		return nil, nil, fmt.Errorf("define require: %w", err)
+		return ScrapeOptions{}, nil, fmt.Errorf("creating require function: %w", err)
 	}
 	if _, err := ctx.RunScript(removeIIFE(src), "main.js"); err != nil {
-		return nil, nil, fmt.Errorf("userscript: %w", err)
+		return ScrapeOptions{}, nil, fmt.Errorf("running user script: %w", err)
 	}
 
-	var opts flyscrape.ScrapeOptions
+	var opts ScrapeOptions
 
 	url, err := ctx.RunScript("options.url", "main.js")
 	if err != nil {
-		return nil, nil, fmt.Errorf("eval: options.url: %w", err)
+		return ScrapeOptions{}, nil, fmt.Errorf("reading options.url: %w", err)
 	}
 	opts.URL = url.String()
 
 	depth, err := ctx.RunScript("options.depth", "main.js")
 	if err != nil {
-		return nil, nil, fmt.Errorf("eval: options.depth: %w", err)
+		return ScrapeOptions{}, nil, fmt.Errorf("reading options.depth: %w", err)
 	}
 	opts.Depth = int(depth.Integer())
 
-	scrape := func(params flyscrape.ScrapeParams) (flyscrape.M, error) {
+	scrape := func(params ScrapeParams) (any, error) {
 		suffix := randSeq(10)
 		ctx.Global().Set("html_"+suffix, params.HTML)
-		data, err := ctx.RunScript(fmt.Sprintf(`JSON.stringify(stdin_default({html: html_%s}))`, suffix), "main.js")
+		ctx.Global().Set("url_"+suffix, params.URL)
+		data, err := ctx.RunScript(fmt.Sprintf(`JSON.stringify(stdin_default({html: html_%s, url: url_%s}))`, suffix, suffix), "main.js")
 		if err != nil {
 			return nil, err
 		}
 
-		var obj flyscrape.M
+		var obj any
 		if err := json.Unmarshal([]byte(data.String()), &obj); err != nil {
 			return nil, err
 		}
@@ -94,7 +88,7 @@ func vm(src string) (*flyscrape.ScrapeOptions, flyscrape.ScrapeFunc, error) {
 		return obj, nil
 	}
 
-	return &opts, scrape, nil
+	return opts, scrape, nil
 }
 
 func randSeq(n int) string {

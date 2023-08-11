@@ -4,20 +4,20 @@ import (
 	"sort"
 	"testing"
 
-	"flyscrape/flyscrape"
+	"flyscrape"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestScrape(t *testing.T) {
-	svc := flyscrape.Service{
+	svc := flyscrape.Scraper{
 		Concurrency: 10,
 		ScrapeOptions: flyscrape.ScrapeOptions{
 			URL:   "http://example.com/foo/bar",
 			Depth: 1,
 		},
-		ScrapeFunc: func(params flyscrape.ScrapeParams) (flyscrape.M, error) {
-			return flyscrape.M{
+		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
+			return map[string]any{
 				"url": params.URL,
 			}, nil
 		},
@@ -38,12 +38,11 @@ func TestScrape(t *testing.T) {
 	}
 	sort.Strings(urls)
 
-	require.Len(t, urls, 5)
+	require.Len(t, urls, 4)
 	require.Equal(t, "http://example.com/baz", urls[0])
 	require.Equal(t, "http://example.com/foo/bar", urls[1])
 	require.Equal(t, "http://example.com/foo/baz", urls[2])
 	require.Equal(t, "http://www.google.com/", urls[3])
-	require.Equal(t, "http://www.google.com/baz", urls[4])
 }
 
 func TestFindLinks(t *testing.T) {
