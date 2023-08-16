@@ -6,3 +6,6 @@ import _ "embed"
 
 //go:embed flyscrape_bundle.js
 var Flyscrape string
+
+//go:embed template.js
+var Template []byte

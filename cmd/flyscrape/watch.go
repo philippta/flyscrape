@@ -27,7 +27,7 @@ func (c *WatchCommand) Run(args []string) error {
 	fetch := flyscrape.CachedFetch()
 	script := fs.Arg(0)
 
-	flyscrape.Watch(script, func(s string) error {
+	err := flyscrape.Watch(script, func(s string) error {
 		opts, scrape, err := flyscrape.Compile(s)
 		if err != nil {
 			log.Println(err)
@@ -53,6 +53,9 @@ func (c *WatchCommand) Run(args []string) error {
 		flyscrape.PrettyPrint(result)
 		return nil
 	})
+	if err != nil && err != flyscrape.StopWatch {
+		return fmt.Errorf("failed to watch script %q: %w", script, err)
+	}
 
 	return nil
 }

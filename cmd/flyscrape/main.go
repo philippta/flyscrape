@@ -30,6 +30,8 @@ func (m *Main) Run(args []string) error {
 	}
 
 	switch cmd {
+	case "new":
+		return (&NewCommand{}).Run(args)
 	case "run":
 		return (&RunCommand{}).Run(args)
 	case "watch":
@@ -53,6 +55,7 @@ Usage:
 
 Commands:
     
+    new    creates a sample scraping script
     run    runs a scraping script
     watch  watches and re-runs a scraping script
 `[1:])

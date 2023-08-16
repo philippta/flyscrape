@@ -28,12 +28,12 @@ func (c *RunCommand) Run(args []string) error {
 	script := fs.Arg(0)
 	src, err := os.ReadFile(script)
 	if err != nil {
-		return fmt.Errorf("failed to read script %q: %v", script, err)
+		return fmt.Errorf("failed to read script %q: %w", script, err)
 	}
 
 	opts, scrape, err := flyscrape.Compile(string(src))
 	if err != nil {
-		return fmt.Errorf("failed to compile script: %v", err)
+		return fmt.Errorf("failed to compile script: %w", err)
 	}
 
 	svc := flyscrape.Scraper{
