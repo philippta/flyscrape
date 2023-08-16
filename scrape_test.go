@@ -13,8 +13,9 @@ func TestScrape(t *testing.T) {
 	svc := flyscrape.Scraper{
 		Concurrency: 10,
 		ScrapeOptions: flyscrape.ScrapeOptions{
-			URL:   "http://example.com/foo/bar",
-			Depth: 1,
+			URL:            "http://example.com/foo/bar",
+			Depth:          1,
+			AllowedDomains: []string{"example.com", "www.google.com"},
 		},
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return map[string]any{

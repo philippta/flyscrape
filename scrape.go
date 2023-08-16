@@ -17,7 +17,7 @@ type ScrapeParams struct {
 
 type ScrapeOptions struct {
 	URL            string   `json:"url"`
-	AllowedDomains []string `json:"allowed_domains"`
+	AllowedDomains []string `json:"allowedDomains"`
 	Depth          int      `json:"depth"`
 }
 
@@ -61,6 +61,12 @@ func (s *Scraper) Scrape() <-chan ScrapeResult {
 	}
 	if s.FetchFunc == nil {
 		s.FetchFunc = Fetch()
+	}
+	if len(s.ScrapeOptions.AllowedDomains) == 0 {
+		u, err := url.Parse(s.ScrapeOptions.URL)
+		if err == nil {
+			s.ScrapeOptions.AllowedDomains = []string{u.Host()}
+		}
 	}
 
 	jobs := make(chan target, 1024)
@@ -107,6 +113,10 @@ func (s *Scraper) worker(id int, jobs chan target, results chan<- result) {
 					continue
 				}
 
+				if !s.isURLAllowed(l) {
+					continue
+				}
+
 				s.wg.Add(1)
 				select {
 				case jobs <- target{url: l, depth: j.depth - 1}:
@@ -136,6 +146,26 @@ func (s *Scraper) process(job target) result {
 	}
 
 	return result{url: job.url, data: data, links: links}
+}
+
+func (s *Scraper) isURLAllowed(rawurl string) bool {
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		return false
+	}
+
+	host := u.Host()
+
+	for _, domain := range s.ScrapeOptions.AllowedDomains {
+		if domain == "*" {
+			return true
+		}
+		if host == domain {
+			return true
+		}
+	}
+
+	return false
 }
 
 func Links(html string, origin string) []string {

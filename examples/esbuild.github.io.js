@@ -3,6 +3,10 @@ import { parse } from "flyscrape";
 export const options = {
     url: "https://esbuild.github.io/plugins/",
     depth: 1,
+    allowedDomains: [
+        "esbuild.github.io", 
+        "nodejs.org",
+    ],
 }
 
 export default function({ html }) {

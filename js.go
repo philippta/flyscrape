@@ -58,18 +58,13 @@ func vm(src string) (ScrapeOptions, ScrapeFunc, error) {
 	}
 
 	var opts ScrapeOptions
-
-	url, err := ctx.RunScript("options.url", "main.js")
+	optsJSON, err := ctx.RunScript("JSON.stringify(options)", "main.js")
 	if err != nil {
-		return ScrapeOptions{}, nil, fmt.Errorf("reading options.url: %w", err)
+		return ScrapeOptions{}, nil, fmt.Errorf("reading options: %w", err)
 	}
-	opts.URL = url.String()
-
-	depth, err := ctx.RunScript("options.depth", "main.js")
-	if err != nil {
-		return ScrapeOptions{}, nil, fmt.Errorf("reading options.depth: %w", err)
+	if err := json.Unmarshal([]byte(optsJSON.String()), &opts); err != nil {
+		return ScrapeOptions{}, nil, fmt.Errorf("decoding options json: %w", err)
 	}
-	opts.Depth = int(depth.Integer())
 
 	scrape := func(params ScrapeParams) (any, error) {
 		suffix := randSeq(10)

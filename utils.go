@@ -11,3 +11,9 @@ func PrettyPrint(v any) {
 	enc.SetIndent("", "   ")
 	enc.Encode(v)
 }
+
+func Print(v any) {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetEscapeHTML(false)
+	enc.Encode(v)
+}

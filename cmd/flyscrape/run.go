@@ -15,6 +15,7 @@ type RunCommand struct{}
 func (c *RunCommand) Run(args []string) error {
 	fs := flag.NewFlagSet("flyscrape-run", flag.ContinueOnError)
 	concurrent := fs.Int("concurrent", 0, "concurrency")
+	noPrettyPrint := fs.Bool("no-pretty-print", false, "no-pretty-print")
 	fs.Usage = c.Usage
 
 	if err := fs.Parse(args); err != nil {
@@ -45,7 +46,11 @@ func (c *RunCommand) Run(args []string) error {
 	count := 0
 	start := time.Now()
 	for result := range svc.Scrape() {
-		flyscrape.PrettyPrint(result)
+		if *noPrettyPrint {
+			flyscrape.Print(result)
+		} else {
+			flyscrape.PrettyPrint(result)
+		}
 		count++
 	}
 	log.Printf("Scraped %d websites in %v\n", count, time.Since(start))
@@ -66,6 +71,9 @@ Arguments:
     -concurrent NUM
         Determines the number of concurrent requests.
 
+    -no-pretty-print
+        Disables pretty printing of scrape results.
+
 
 Examples:
 
@@ -74,5 +82,8 @@ Examples:
 
     # Run the script with 10 concurrent requests.
     $ flyscrape run -concurrent 10 example.js
+
+    # Run the script with pretty printing disabled.
+    $ flyscrape run -no-pretty-print example.js
 `[1:])
 }
