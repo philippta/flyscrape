@@ -2,61 +2,58 @@ package main
 
 import (
 	_ "embed"
-	"encoding/json"
+	"flag"
 	"fmt"
-	"io"
-	"net/http"
+	"log"
 	"os"
-	"time"
-
-	"flyscrape"
+	"strings"
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		exit("Please provide a file to run.")
-	}
+	log.SetFlags(0)
 
-	src, err := os.ReadFile(os.Args[1])
-	if err != nil {
-		exit(fmt.Sprintf("Error reading file: %v", err))
+	m := &Main{}
+	if err := m.Run(os.Args[1:]); err == flag.ErrHelp {
+		os.Exit(1)
+	} else if err != nil {
+		log.Println(err)
+		os.Exit(1)
 	}
-
-	opts, scrape, err := flyscrape.Compile(string(src))
-	if err != nil {
-		exit(fmt.Sprintf("Error compiling JavaScript file: %v", err))
-	}
-
-	svc := flyscrape.Scraper{
-		ScrapeOptions: opts,
-		ScrapeFunc:    scrape,
-		Concurrency:   5,
-		FetchFunc: func(url string) (string, error) {
-			resp, err := http.Get(url)
-			if err != nil {
-				return "", err
-			}
-			defer resp.Body.Close()
-
-			data, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return "", err
-			}
-			return string(data), nil
-		},
-	}
-
-	count := 0
-	start := time.Now()
-	for result := range svc.Scrape() {
-		data, _ := json.MarshalIndent(result, "", "  ")
-		fmt.Println(string(data))
-		count++
-	}
-	fmt.Printf("Scraped %d websites in %v\n", count, time.Since(start))
 }
 
-func exit(msg string) {
-	fmt.Fprintln(os.Stderr, msg)
-	os.Exit(1)
+type Main struct{}
+
+func (m *Main) Run(args []string) error {
+	var cmd string
+	if len(args) > 0 {
+		cmd, args = args[0], args[1:]
+	}
+
+	switch cmd {
+	case "run":
+		return (&RunCommand{}).Run(args)
+	case "watch":
+		return (&WatchCommand{}).Run(args)
+	default:
+		if cmd == "" || cmd == "help" || strings.HasPrefix(cmd, "-") {
+			m.Usage()
+			return flag.ErrHelp
+		}
+		return fmt.Errorf("flyscrape %s: unknown command", cmd)
+	}
+}
+
+func (m *Main) Usage() {
+	fmt.Println(`
+flyscrape is an elegant scraping tool for efficiently extracting data from websites.
+
+Usage:
+
+    flyscrape <command> [arguments]
+
+Commands:
+    
+    run    runs a scraping script
+    watch  watches and re-runs a scraping script
+`[1:])
 }

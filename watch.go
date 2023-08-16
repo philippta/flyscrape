@@ -43,7 +43,7 @@ func Watch(path string, fn func(string) error) error {
 				return nil
 			}
 			if event.Has(fsnotify.Remove) {
-				return nil
+				continue
 			}
 			if event.Has(fsnotify.Chmod) {
 				continue

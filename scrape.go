@@ -59,6 +59,9 @@ func (s *Scraper) Scrape() <-chan ScrapeResult {
 	if s.Concurrency == 0 {
 		s.Concurrency = 1
 	}
+	if s.FetchFunc == nil {
+		s.FetchFunc = Fetch()
+	}
 
 	jobs := make(chan target, 1024)
 	results := make(chan result)
