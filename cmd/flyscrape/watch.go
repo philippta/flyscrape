@@ -50,7 +50,7 @@ func (c *WatchCommand) Run(args []string) error {
 
 		screen.Clear()
 		screen.MoveTopLeft()
-		flyscrape.PrettyPrint(result)
+		fmt.Println(flyscrape.PrettyPrint(result, ""))
 		return nil
 	})
 	if err != nil && err != flyscrape.StopWatch {

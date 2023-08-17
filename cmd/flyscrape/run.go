@@ -45,16 +45,24 @@ func (c *RunCommand) Run(args []string) error {
 
 	count := 0
 	start := time.Now()
+
 	for result := range svc.Scrape() {
+		if count > 0 {
+			fmt.Println(",")
+		}
+		if count == 0 {
+			fmt.Println("[")
+		}
 		if *noPrettyPrint {
-			flyscrape.Print(result)
+			fmt.Print(flyscrape.Print(result, "  "))
 		} else {
-			flyscrape.PrettyPrint(result)
+			fmt.Print(flyscrape.PrettyPrint(result, "  "))
 		}
 		count++
 	}
-	log.Printf("Scraped %d websites in %v\n", count, time.Since(start))
+	fmt.Println("\n]")
 
+	log.Printf("Scraped %d websites in %v\n", count, time.Since(start))
 	return nil
 }
 
