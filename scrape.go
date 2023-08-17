@@ -25,10 +25,11 @@ type ScrapeOptions struct {
 }
 
 type ScrapeResult struct {
-	URL   string   `json:"url"`
-	Data  any      `json:"data,omitempty"`
-	Links []string `json:"-"`
-	Error error    `json:"error,omitempty"`
+	URL       string    `json:"url"`
+	Data      any       `json:"data,omitempty"`
+	Links     []string  `json:"-"`
+	Error     error     `json:"error,omitempty"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type (
@@ -96,10 +97,11 @@ func (s *Scraper) Scrape() <-chan ScrapeResult {
 	go func() {
 		for res := range results {
 			scraperesults <- ScrapeResult{
-				URL:   res.url,
-				Data:  res.data,
-				Links: res.links,
-				Error: res.err,
+				URL:       res.url,
+				Data:      res.data,
+				Links:     res.links,
+				Error:     res.err,
+				Timestamp: time.Now().UTC(),
 			}
 		}
 		close(scraperesults)
