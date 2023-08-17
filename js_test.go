@@ -1,7 +1,6 @@
 package flyscrape_test
 
 import (
-	"os"
 	"testing"
 
 	"flyscrape"
@@ -19,11 +18,25 @@ var html = `
     </body>
 </html>`
 
-func TestV8(t *testing.T) {
-	data, err := os.ReadFile("examples/esbuild.github.io.js")
-	require.NoError(t, err)
+var script = `
+import { parse } from "flyscrape";
 
-	opts, run, err := flyscrape.Compile(string(data))
+export const options = {
+    url: "https://localhost/",
+}
+
+export default function({ html, url }) {
+    const $ = parse(html);
+
+    return {
+        headline: $("h1").text(),
+        body: $("p").text()
+    }
+}
+`
+
+func TestV8(t *testing.T) {
+	opts, run, err := flyscrape.Compile(script)
 	require.NoError(t, err)
 	require.NotNil(t, opts)
 	require.NotNil(t, run)

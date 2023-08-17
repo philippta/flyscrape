@@ -1,9 +1,9 @@
-import { parse } from "flyscrape";
+import { parse } from 'flyscrape';
 
 export const options = {
-    url: "https://news.ycombinator.com/",     // Specify the URL to start scraping from.
+    url: 'https://news.ycombinator.com/',     // Specify the URL to start scraping from.
     depth: 1,                                 // Specify how deep links should be followed.  (default = 0, no follow)
-    allowedDomains: ["news.ycombinator.com"], // Specify the allowed domains.                (default = domain from url)
+    allowedDomains: ['news.ycombinator.com'], // Specify the allowed domains.                (default = domain from url)
     blockedDomains: [],                       // Specify the blocked domains.                (default = none)
     rate: 100,                                // Specify the rate in requests per second.    (default = 100)
 }
@@ -13,7 +13,7 @@ export default function({ html, url }) {
     const title = $('title');
     const entries = $('.athing').toArray();
 
-    if (entries.length == 0) {
+    if (!entries.length) {
         return null; // Omits scraped pages without entries.
     }
 

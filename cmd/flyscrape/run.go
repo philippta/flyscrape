@@ -14,7 +14,6 @@ type RunCommand struct{}
 
 func (c *RunCommand) Run(args []string) error {
 	fs := flag.NewFlagSet("flyscrape-run", flag.ContinueOnError)
-	concurrent := fs.Int("concurrent", 0, "concurrency")
 	noPrettyPrint := fs.Bool("no-pretty-print", false, "no-pretty-print")
 	fs.Usage = c.Usage
 
@@ -40,7 +39,6 @@ func (c *RunCommand) Run(args []string) error {
 	svc := flyscrape.Scraper{
 		ScrapeOptions: opts,
 		ScrapeFunc:    scrape,
-		Concurrency:   *concurrent,
 	}
 
 	count := 0
@@ -75,9 +73,6 @@ Usage:
     flyscrape run SCRIPT
 
 Arguments:
-
-    -concurrent NUM
-        Determines the number of concurrent requests.
 
     -no-pretty-print
         Disables pretty printing of scrape results.
