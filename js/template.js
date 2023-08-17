@@ -4,6 +4,7 @@ export const options = {
     url: "https://news.ycombinator.com/",     // Specify the URL to start scraping from.
     depth: 1,                                 // Specify how deep links should be followed (0 = no follow).
     allowedDomains: ["news.ycombinator.com"], // Specify the allowed domains to follow.
+    rate: 100,                                // Specify the request rate in requests per second.
 }
 
 export default function({ html, url }) {
