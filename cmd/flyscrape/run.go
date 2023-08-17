@@ -83,9 +83,6 @@ Examples:
     # Run the script.
     $ flyscrape run example.js
 
-    # Run the script with 10 concurrent requests.
-    $ flyscrape run -concurrent 10 example.js
-
     # Run the script with pretty printing disabled.
     $ flyscrape run -no-pretty-print example.js
 `[1:])
