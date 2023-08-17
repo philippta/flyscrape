@@ -19,6 +19,7 @@ type ScrapeParams struct {
 type ScrapeOptions struct {
 	URL            string   `json:"url"`
 	AllowedDomains []string `json:"allowedDomains"`
+	BlockedDomains []string `json:"blockedDomains"`
 	Depth          int      `json:"depth"`
 	Rate           float64  `json:"rate"`
 }
@@ -135,7 +136,9 @@ func (s *Scraper) worker(jobs chan target, results chan<- result) {
 				}
 			}
 
-			results <- res
+			if res.err != nil || res.data != nil {
+				results <- res
+			}
 			s.wg.Done()
 		}()
 	}
@@ -163,17 +166,23 @@ func (s *Scraper) isURLAllowed(rawurl string) bool {
 	}
 
 	host := u.Host()
+	ok := false
 
 	for _, domain := range s.ScrapeOptions.AllowedDomains {
-		if domain == "*" {
-			return true
-		}
-		if host == domain {
-			return true
+		if domain == "*" || host == domain {
+			ok = true
+			break
 		}
 	}
 
-	return false
+	for _, domain := range s.ScrapeOptions.BlockedDomains {
+		if host == domain {
+			ok = false
+			break
+		}
+	}
+
+	return ok
 }
 
 func Links(html string, origin string) []string {
