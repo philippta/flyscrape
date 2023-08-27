@@ -14,6 +14,16 @@ import (
 	v8 "rogchap.com/v8go"
 )
 
+type TransformError struct {
+	Line   int
+	Column int
+	Text   string
+}
+
+func (err TransformError) Error() string {
+	return fmt.Sprintf("%d:%d: %s", err.Line, err.Column, err.Text)
+}
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -34,7 +44,12 @@ func build(src string) (string, error) {
 
 	var errs []error
 	for _, msg := range res.Errors {
-		errs = append(errs, fmt.Errorf("%s", msg.Text))
+		err := TransformError{Text: msg.Text}
+		if msg.Location != nil {
+			err.Line = msg.Location.Line
+			err.Column = msg.Location.Column
+		}
+		errs = append(errs, err)
 	}
 	if len(res.Errors) > 0 {
 		return "", errors.Join(errs...)

@@ -30,7 +30,17 @@ func (c *WatchCommand) Run(args []string) error {
 	err := flyscrape.Watch(script, func(s string) error {
 		opts, scrape, err := flyscrape.Compile(s)
 		if err != nil {
-			log.Println(err)
+			screen.Clear()
+			screen.MoveTopLeft()
+
+			if errs, ok := err.(interface{ Unwrap() []error }); ok {
+				for _, err := range errs.Unwrap() {
+					log.Printf("%s:%v\n", script, err)
+				}
+			} else {
+				log.Println(err)
+			}
+
 			// ignore compilation errors
 			return nil
 		}
@@ -43,13 +53,14 @@ func (c *WatchCommand) Run(args []string) error {
 		}
 
 		result := <-scr.Scrape()
+		screen.Clear()
+		screen.MoveTopLeft()
+
 		if result.Error != nil {
 			log.Println(result.Error)
 			return nil
 		}
 
-		screen.Clear()
-		screen.MoveTopLeft()
 		fmt.Println(flyscrape.PrettyPrint(result, ""))
 		return nil
 	})
