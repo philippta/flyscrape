@@ -16,8 +16,8 @@ var html = `
 <html>
     <body>
         <main>
-            <h1>Plugins</h1>
-            <p>The plugin API allows you to inject code into various parts of the build process.</p>
+            <h1>headline</h1>
+            <p>paragraph</p>
         </main>
     </body>
 </html>`
@@ -34,22 +34,44 @@ export default function({ html, url }) {
 
     return {
         headline: $("h1").text(),
-        body: $("p").text()
+        body: $("p").text(),
+        url: url,
     }
 }
 `
 
-func TestV8(t *testing.T) {
+func TestJSScrape(t *testing.T) {
 	opts, run, err := flyscrape.Compile(script)
 	require.NoError(t, err)
 	require.NotNil(t, opts)
 	require.NotNil(t, run)
 
-	extract, err := run(flyscrape.ScrapeParams{
+	result, err := run(flyscrape.ScrapeParams{
 		HTML: html,
+		URL:  "http://localhost/",
 	})
 
 	require.NoError(t, err)
-	require.Equal(t, "Plugins", extract.(map[string]any)["headline"])
-	require.Equal(t, "The plugin API allows you to inject code into various parts of the build process.", extract.(map[string]any)["body"])
+
+	m, ok := result.(map[string]any)
+	require.True(t, ok)
+	require.Equal(t, "headline", m["headline"])
+	require.Equal(t, "paragraph", m["body"])
+	require.Equal(t, "http://localhost/", m["url"])
+}
+
+func TestJSCompileError(t *testing.T) {
+	opts, run, err := flyscrape.Compile("import foo;")
+	require.Error(t, err)
+	require.Empty(t, opts)
+	require.Nil(t, run)
+
+	var terr flyscrape.TransformError
+	require.ErrorAs(t, err, &terr)
+
+	require.Equal(t, terr, flyscrape.TransformError{
+		Line:   1,
+		Column: 10,
+		Text:   `Expected "from" but found ";"`,
+	})
 }

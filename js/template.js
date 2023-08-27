@@ -3,8 +3,8 @@ import { parse } from 'flyscrape';
 export const options = {
     url: 'https://news.ycombinator.com/',     // Specify the URL to start scraping from.
     depth: 1,                                 // Specify how deep links should be followed.  (default = 0, no follow)
-    allowedDomains: ['news.ycombinator.com'], // Specify the allowed domains.                (default = domain from url)
-    blockedDomains: [],                       // Specify the blocked domains.                (default = none)
+    allowDomains: [],                         // Specify the allowed domains. * for all.     (default = domain from url)
+    denyDomains: [],                          // Specify the denied domains.                 (default = none)
     rate: 100,                                // Specify the rate in requests per second.    (default = 100)
 }
 

@@ -5,21 +5,29 @@
 package flyscrape
 
 import (
+	"crypto/tls"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/cornelk/hashmap"
 )
 
-func CachedFetch() FetchFunc {
-	cache := hashmap.New[string, string]()
+func ProxiedFetch(proxyURL string) FetchFunc {
+	pu, err := url.Parse(proxyURL)
+	if err != nil {
+		panic("invalid proxy url")
+	}
+
+	client := http.Client{
+		Transport: &http.Transport{
+			Proxy:           http.ProxyURL(pu),
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
 
 	return func(url string) (string, error) {
-		if html, ok := cache.Get(url); ok {
-			return html, nil
-		}
-
-		resp, err := http.Get(url)
+		resp, err := client.Get(url)
 		if err != nil {
 			return "", err
 		}
@@ -31,6 +39,23 @@ func CachedFetch() FetchFunc {
 		}
 
 		html := string(body)
+		return html, nil
+	}
+}
+
+func CachedFetch(fetch FetchFunc) FetchFunc {
+	cache := hashmap.New[string, string]()
+
+	return func(url string) (string, error) {
+		if html, ok := cache.Get(url); ok {
+			return html, nil
+		}
+
+		html, err := fetch(url)
+		if err != nil {
+			return "", err
+		}
+
 		cache.Set(url, html)
 		return html, nil
 	}

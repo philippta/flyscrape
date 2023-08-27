@@ -18,6 +18,7 @@ type WatchCommand struct{}
 
 func (c *WatchCommand) Run(args []string) error {
 	fs := flag.NewFlagSet("flyscrape-watch", flag.ContinueOnError)
+	proxy := fs.String("proxy", "", "proxy")
 	fs.Usage = c.Usage
 
 	if err := fs.Parse(args); err != nil {
@@ -28,7 +29,14 @@ func (c *WatchCommand) Run(args []string) error {
 		return fmt.Errorf("too many arguments")
 	}
 
-	fetch := flyscrape.CachedFetch()
+	var fetch flyscrape.FetchFunc
+	if *proxy != "" {
+		fetch = flyscrape.ProxiedFetch(*proxy)
+	} else {
+		fetch = flyscrape.Fetch()
+	}
+
+	fetch = flyscrape.CachedFetch(fetch)
 	script := fs.Arg(0)
 
 	err := flyscrape.Watch(script, func(s string) error {

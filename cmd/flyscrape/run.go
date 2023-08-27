@@ -19,6 +19,7 @@ type RunCommand struct{}
 func (c *RunCommand) Run(args []string) error {
 	fs := flag.NewFlagSet("flyscrape-run", flag.ContinueOnError)
 	noPrettyPrint := fs.Bool("no-pretty-print", false, "no-pretty-print")
+	proxy := fs.String("proxy", "", "proxy")
 	fs.Usage = c.Usage
 
 	if err := fs.Parse(args); err != nil {
@@ -43,6 +44,9 @@ func (c *RunCommand) Run(args []string) error {
 	svc := flyscrape.Scraper{
 		ScrapeOptions: opts,
 		ScrapeFunc:    scrape,
+	}
+	if *proxy != "" {
+		svc.FetchFunc = flyscrape.ProxiedFetch(*proxy)
 	}
 
 	count := 0

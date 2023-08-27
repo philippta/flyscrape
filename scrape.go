@@ -6,6 +6,7 @@ package flyscrape
 
 import (
 	"log"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -21,11 +22,13 @@ type ScrapeParams struct {
 }
 
 type ScrapeOptions struct {
-	URL            string   `json:"url"`
-	AllowedDomains []string `json:"allowedDomains"`
-	BlockedDomains []string `json:"blockedDomains"`
-	Depth          int      `json:"depth"`
-	Rate           float64  `json:"rate"`
+	URL          string   `json:"url"`
+	AllowDomains []string `json:"allowDomains"`
+	DenyDomains  []string `json:"denyDomains"`
+	AllowURLs    []string `json:"allowURLs"`
+	Proxy        string   `json:"proxy"`
+	Depth        int      `json:"depth"`
+	Rate         float64  `json:"rate"`
 }
 
 type ScrapeResult struct {
@@ -54,10 +57,11 @@ type Scraper struct {
 	ScrapeFunc    ScrapeFunc
 	FetchFunc     FetchFunc
 
-	visited *hashmap.Map[string, struct{}]
-	wg      *sync.WaitGroup
-	jobs    chan target
-	results chan ScrapeResult
+	visited     *hashmap.Map[string, struct{}]
+	wg          *sync.WaitGroup
+	jobs        chan target
+	results     chan ScrapeResult
+	allowURLsRE []*regexp.Regexp
 }
 
 func (s *Scraper) init() {
@@ -69,16 +73,24 @@ func (s *Scraper) init() {
 	if s.FetchFunc == nil {
 		s.FetchFunc = Fetch()
 	}
+	if s.ScrapeOptions.Proxy != "" {
+		s.FetchFunc = ProxiedFetch(s.ScrapeOptions.Proxy)
+	}
 
 	if s.ScrapeOptions.Rate == 0 {
 		s.ScrapeOptions.Rate = 100
 	}
 
-	if len(s.ScrapeOptions.AllowedDomains) == 0 {
-		u, err := url.Parse(s.ScrapeOptions.URL)
-		if err == nil {
-			s.ScrapeOptions.AllowedDomains = []string{u.Host()}
+	if u, err := url.Parse(s.ScrapeOptions.URL); err == nil {
+		s.ScrapeOptions.AllowDomains = append(s.ScrapeOptions.AllowDomains, u.Host())
+	}
+
+	for _, pat := range s.ScrapeOptions.AllowURLs {
+		re, err := regexp.Compile(pat)
+		if err != nil {
+			continue
 		}
+		s.allowURLsRE = append(s.allowURLsRE, re)
 	}
 }
 
@@ -116,7 +128,8 @@ func (s *Scraper) worker() {
 					continue
 				}
 
-				if !s.isURLAllowed(l) {
+				allowed := s.isDomainAllowed(l) && s.isURLAllowed(l)
+				if !allowed {
 					continue
 				}
 
@@ -157,7 +170,7 @@ func (s *Scraper) enqueueJob(url string, depth int) {
 	}
 }
 
-func (s *Scraper) isURLAllowed(rawurl string) bool {
+func (s *Scraper) isDomainAllowed(rawurl string) bool {
 	u, err := url.Parse(rawurl)
 	if err != nil {
 		return false
@@ -166,17 +179,33 @@ func (s *Scraper) isURLAllowed(rawurl string) bool {
 	host := u.Host()
 	ok := false
 
-	for _, domain := range s.ScrapeOptions.AllowedDomains {
+	for _, domain := range s.ScrapeOptions.AllowDomains {
 		if domain == "*" || host == domain {
 			ok = true
 			break
 		}
 	}
 
-	for _, domain := range s.ScrapeOptions.BlockedDomains {
+	for _, domain := range s.ScrapeOptions.DenyDomains {
 		if host == domain {
 			ok = false
 			break
+		}
+	}
+
+	return ok
+}
+
+func (s *Scraper) isURLAllowed(rawurl string) bool {
+	if len(s.allowURLsRE) == 0 {
+		return true
+	}
+
+	ok := false
+
+	for _, re := range s.allowURLsRE {
+		if re.MatchString(rawurl) {
+			ok = true
 		}
 	}
 
