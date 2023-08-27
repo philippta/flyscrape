@@ -18,9 +18,9 @@ import (
 func TestScrapeFollowLinks(t *testing.T) {
 	scr := flyscrape.Scraper{
 		ScrapeOptions: flyscrape.ScrapeOptions{
-			URL:          "http://www.example.com/foo/bar",
-			Depth:        1,
-			AllowDomains: []string{"www.google.com"},
+			URL:            "http://www.example.com/foo/bar",
+			Depth:          1,
+			AllowedDomains: []string{"www.google.com"},
 		},
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
@@ -47,9 +47,9 @@ func TestScrapeFollowLinks(t *testing.T) {
 func TestScrapeDepth(t *testing.T) {
 	scr := flyscrape.Scraper{
 		ScrapeOptions: flyscrape.ScrapeOptions{
-			URL:          "http://www.example.com/",
-			Depth:        2,
-			AllowDomains: []string{"*"},
+			URL:            "http://www.example.com/",
+			Depth:          2,
+			AllowedDomains: []string{"*"},
 		},
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
@@ -78,12 +78,12 @@ func TestScrapeDepth(t *testing.T) {
 	require.Contains(t, urls, "http://www.duckduckgo.com/")
 }
 
-func TestScrapeAllowDomains(t *testing.T) {
+func TestScrapeAllowedDomains(t *testing.T) {
 	scr := flyscrape.Scraper{
 		ScrapeOptions: flyscrape.ScrapeOptions{
-			URL:          "http://www.example.com/",
-			Depth:        1,
-			AllowDomains: []string{"www.google.com"},
+			URL:            "http://www.example.com/",
+			Depth:          1,
+			AllowedDomains: []string{"www.google.com"},
 		},
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
@@ -104,12 +104,12 @@ func TestScrapeAllowDomains(t *testing.T) {
 	require.Contains(t, urls, "http://www.google.com/")
 }
 
-func TestScrapeAllowDomainsAll(t *testing.T) {
+func TestScrapeAllowedDomainsAll(t *testing.T) {
 	scr := flyscrape.Scraper{
 		ScrapeOptions: flyscrape.ScrapeOptions{
-			URL:          "http://www.example.com/",
-			Depth:        1,
-			AllowDomains: []string{"*"},
+			URL:            "http://www.example.com/",
+			Depth:          1,
+			AllowedDomains: []string{"*"},
 		},
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
@@ -131,13 +131,13 @@ func TestScrapeAllowDomainsAll(t *testing.T) {
 	require.Contains(t, urls, "http://www.google.com/")
 }
 
-func TestScrapeDenyDomains(t *testing.T) {
+func TestScrapeBlockedDomains(t *testing.T) {
 	scr := flyscrape.Scraper{
 		ScrapeOptions: flyscrape.ScrapeOptions{
-			URL:          "http://www.example.com/",
-			Depth:        1,
-			AllowDomains: []string{"*"},
-			DenyDomains:  []string{"www.google.com"},
+			URL:            "http://www.example.com/",
+			Depth:          1,
+			AllowedDomains: []string{"*"},
+			BlockedDomains: []string{"www.google.com"},
 		},
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
@@ -158,12 +158,12 @@ func TestScrapeDenyDomains(t *testing.T) {
 	require.Contains(t, urls, "http://www.duckduckgo.com/")
 }
 
-func TestScrapeAllowURLs(t *testing.T) {
+func TestScrapeAllowedURLs(t *testing.T) {
 	scr := flyscrape.Scraper{
 		ScrapeOptions: flyscrape.ScrapeOptions{
-			URL:       "http://www.example.com/",
-			Depth:     1,
-			AllowURLs: []string{`/foo\?id=\d+`, `/bar$`},
+			URL:         "http://www.example.com/",
+			Depth:       1,
+			AllowedURLs: []string{`/foo\?id=\d+`, `/bar$`},
 		},
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
@@ -185,6 +185,35 @@ func TestScrapeAllowURLs(t *testing.T) {
 	require.Contains(t, urls, "http://www.example.com/")
 	require.Contains(t, urls, "http://www.example.com/foo?id=123")
 	require.Contains(t, urls, "http://www.example.com/bar")
+}
+
+func TestScrapeBlockedURLs(t *testing.T) {
+	scr := flyscrape.Scraper{
+		ScrapeOptions: flyscrape.ScrapeOptions{
+			URL:         "http://www.example.com/",
+			Depth:       1,
+			BlockedURLs: []string{`/foo\?id=\d+`, `/bar$`},
+		},
+		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
+			return "foobar", nil
+		},
+		FetchFunc: func(url string) (string, error) {
+			return `<a href="foo?id=123">123</a>
+			        <a href="foo?id=ABC">ABC</a>
+			        <a href="/bar">bar</a>
+                    <a href="/barz">barz</a>`, nil
+		},
+	}
+
+	urls := make(map[string]struct{})
+	for res := range scr.Scrape() {
+		urls[res.URL] = struct{}{}
+	}
+
+	require.Len(t, urls, 3)
+	require.Contains(t, urls, "http://www.example.com/")
+	require.Contains(t, urls, "http://www.example.com/foo?id=ABC")
+	require.Contains(t, urls, "http://www.example.com/barz")
 }
 
 func TestScrapeRate(t *testing.T) {

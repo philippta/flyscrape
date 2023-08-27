@@ -22,13 +22,14 @@ type ScrapeParams struct {
 }
 
 type ScrapeOptions struct {
-	URL          string   `json:"url"`
-	AllowDomains []string `json:"allowDomains"`
-	DenyDomains  []string `json:"denyDomains"`
-	AllowURLs    []string `json:"allowURLs"`
-	Proxy        string   `json:"proxy"`
-	Depth        int      `json:"depth"`
-	Rate         float64  `json:"rate"`
+	URL            string   `json:"url"`
+	AllowedDomains []string `json:"allowedDomains"`
+	BlockedDomains []string `json:"blockedDomains"`
+	AllowedURLs    []string `json:"allowedURLs"`
+	BlockedURLs    []string `json:"blockedURLs"`
+	Proxy          string   `json:"proxy"`
+	Depth          int      `json:"depth"`
+	Rate           float64  `json:"rate"`
 }
 
 type ScrapeResult struct {
@@ -57,11 +58,12 @@ type Scraper struct {
 	ScrapeFunc    ScrapeFunc
 	FetchFunc     FetchFunc
 
-	visited     *hashmap.Map[string, struct{}]
-	wg          *sync.WaitGroup
-	jobs        chan target
-	results     chan ScrapeResult
-	allowURLsRE []*regexp.Regexp
+	visited       *hashmap.Map[string, struct{}]
+	wg            *sync.WaitGroup
+	jobs          chan target
+	results       chan ScrapeResult
+	allowedURLsRE []*regexp.Regexp
+	blockedURLsRE []*regexp.Regexp
 }
 
 func (s *Scraper) init() {
@@ -82,15 +84,23 @@ func (s *Scraper) init() {
 	}
 
 	if u, err := url.Parse(s.ScrapeOptions.URL); err == nil {
-		s.ScrapeOptions.AllowDomains = append(s.ScrapeOptions.AllowDomains, u.Host())
+		s.ScrapeOptions.AllowedDomains = append(s.ScrapeOptions.AllowedDomains, u.Host())
 	}
 
-	for _, pat := range s.ScrapeOptions.AllowURLs {
+	for _, pat := range s.ScrapeOptions.AllowedURLs {
 		re, err := regexp.Compile(pat)
 		if err != nil {
 			continue
 		}
-		s.allowURLsRE = append(s.allowURLsRE, re)
+		s.allowedURLsRE = append(s.allowedURLsRE, re)
+	}
+
+	for _, pat := range s.ScrapeOptions.BlockedURLs {
+		re, err := regexp.Compile(pat)
+		if err != nil {
+			continue
+		}
+		s.blockedURLsRE = append(s.blockedURLsRE, re)
 	}
 }
 
@@ -179,14 +189,14 @@ func (s *Scraper) isDomainAllowed(rawurl string) bool {
 	host := u.Host()
 	ok := false
 
-	for _, domain := range s.ScrapeOptions.AllowDomains {
+	for _, domain := range s.ScrapeOptions.AllowedDomains {
 		if domain == "*" || host == domain {
 			ok = true
 			break
 		}
 	}
 
-	for _, domain := range s.ScrapeOptions.DenyDomains {
+	for _, domain := range s.ScrapeOptions.BlockedDomains {
 		if host == domain {
 			ok = false
 			break
@@ -197,15 +207,32 @@ func (s *Scraper) isDomainAllowed(rawurl string) bool {
 }
 
 func (s *Scraper) isURLAllowed(rawurl string) bool {
-	if len(s.allowURLsRE) == 0 {
+	// allow root url
+	if rawurl == s.ScrapeOptions.URL {
+		return true
+	}
+
+	// allow if no filter is set
+	if len(s.allowedURLsRE) == 0 && len(s.blockedURLsRE) == 0 {
 		return true
 	}
 
 	ok := false
+	if len(s.allowedURLsRE) == 0 {
+		ok = true
+	}
 
-	for _, re := range s.allowURLsRE {
+	for _, re := range s.allowedURLsRE {
 		if re.MatchString(rawurl) {
 			ok = true
+			break
+		}
+	}
+
+	for _, re := range s.blockedURLsRE {
+		if re.MatchString(rawurl) {
+			ok = false
+			break
 		}
 	}
 
