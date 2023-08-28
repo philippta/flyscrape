@@ -75,3 +75,31 @@ func TestJSCompileError(t *testing.T) {
 		Text:   `Expected "from" but found ";"`,
 	})
 }
+
+func TestJSOptions(t *testing.T) {
+	js := `
+    export const options = {
+        url: 'http://localhost/',
+        depth: 5,
+        allowedDomains: ['example.com'],
+        blockedDomains: ['google.com'],
+        allowedURLs: ['/foo'],
+        blockedURLs: ['/bar'],
+        proxy: 'http://proxy/',
+        rate: 1,
+    }
+    export default function() {}
+    `
+	opts, _, err := flyscrape.Compile(js)
+	require.NoError(t, err)
+	require.Equal(t, flyscrape.ScrapeOptions{
+		URL:            "http://localhost/",
+		Depth:          5,
+		AllowedDomains: []string{"example.com"},
+		BlockedDomains: []string{"google.com"},
+		AllowedURLs:    []string{"/foo"},
+		BlockedURLs:    []string{"/bar"},
+		Proxy:          "http://proxy/",
+		Rate:           1,
+	}, opts)
+}

@@ -7,6 +7,7 @@ export const options = {
     blockedDomains: [],                       // Specify the blocked domains.                (default = none)
     allowedURLs: [],                          // Specify the allowed URLs as regex.          (default = all allowed)
     blockedURLs: [],                          // Specify the blocked URLs as regex.          (default = non blocked)
+    proxy: '',                                // Specify the HTTP(S) proxy to use.           (default = no proxy)
     rate: 100,                                // Specify the rate in requests per second.    (default = 100)
 }
 
