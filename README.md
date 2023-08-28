@@ -1,6 +1,6 @@
-# flyscrape - Elegant Website Scraping Tool
+# flyscrape
 
-flyscrape is a powerful command-line tool designed to streamline the process of efficiently extracting data from websites. Whether you're a developer, data analyst, or researcher, flyscrape empowers you to effortlessly gather information from web pages and transform it into structured data. With its intuitive command-line interface and versatile capabilities, flyscrape simplifies the scraping process while delivering accurate and customizable results.
+flyscrape is a powerful command-line tool designed to streamline the process of efficiently extracting data from websites. Whether you're a developer, data analyst, or researcher, flyscrape empowers you to effortlessly gather information from web pages and transform it into structured data. 
 
 ## Features
 
@@ -21,7 +21,7 @@ To install **flyscrape**, follow these simple steps:
 2. Install **flyscrape**: Open a terminal and run the following command:
 
    ```bash
-   go install github.com/philippta/flyscrape@latest
+   go install github.com/philippta/flyscrape/cmd/flyscrape@latest
    ```
 
 ## Usage
@@ -39,7 +39,6 @@ flyscrape new example.js
 ### Running a Script
 
 Execute your scraping script using the `run` command:
-
 
 ```bash
 flyscrape run example.js
@@ -61,12 +60,15 @@ Below is an example scraping script that showcases the capabilities of **flyscra
 import { parse } from 'flyscrape';
 
 export const options = {
-    url: 'https://news.ycombinator.com/',
-    depth: 1,
-    allowedDomains: ['news.ycombinator.com'],
-    blockedDomains: [],
-    rate: 100,
-};
+    url: 'https://news.ycombinator.com/',     // Specify the URL to start scraping from.
+    depth: 1,                                 // Specify how deep links should be followed.  (default = 0, no follow)
+    allowedDomains: [],                       // Specify the allowed domains. ['*'] for all. (default = domain from url)
+    blockedDomains: [],                       // Specify the blocked domains.                (default = none)
+    allowedURLs: [],                          // Specify the allowed URLs as regex.          (default = all allowed)
+    blockedURLs: [],                          // Specify the blocked URLs as regex.          (default = non blocked)
+    proxy: '',                                // Specify the HTTP(S) proxy to use.           (default = no proxy)
+    rate: 100,                                // Specify the rate in requests per second.    (default = 100)
+}
 
 export default function({ html, url }) {
     const $ = parse(html);
@@ -74,22 +76,22 @@ export default function({ html, url }) {
     const entries = $('.athing').toArray();
 
     if (!entries.length) {
-        return null;
+        return null; // Omits scraped pages without entries.
     }
 
     return {
-        title: title.text(),
-        entries: entries.map(entry => {
+        title: title.text(),                                            // Extract the page title.
+        entries: entries.map(entry => {                                 // Extract all news entries.
             const link = $(entry).find('.titleline > a');
             const rank = $(entry).find('.rank');
             const points = $(entry).next().find('.score');
 
             return {
-                title: link.text(),
-                url: link.attr('href'),
-                rank: parseInt(rank.text().slice(0, -1)),
-                points: parseInt(points.text().replace(' points', '')),
-            };
+                title: link.text(),                                     // Extract the title text.
+                url: link.attr('href'),                                 // Extract the link href.
+                rank: parseInt(rank.text().slice(0, -1)),               // Extract and cleanup the rank.
+                points: parseInt(points.text().replace(' points', '')), // Extract and cleanup the points.
+            }
         }),
     };
 }
@@ -98,4 +100,3 @@ export default function({ html, url }) {
 ## Contributing
 
 We welcome contributions from the community! If you encounter any issues or have suggestions for improvement, please [submit an issue](https://github.com/philippta/flyscrape/issues).
-
