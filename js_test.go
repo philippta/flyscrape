@@ -7,8 +7,7 @@ package flyscrape_test
 import (
 	"testing"
 
-	"flyscrape"
-
+	"github.com/philippta/flyscrape"
 	"github.com/stretchr/testify/require"
 )
 

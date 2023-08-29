@@ -9,9 +9,8 @@ import (
 	"fmt"
 	"log"
 
-	"flyscrape"
-
 	"github.com/inancgumus/screen"
+	"github.com/philippta/flyscrape"
 )
 
 type WatchCommand struct{}

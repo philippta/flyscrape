@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"flyscrape/js"
+	"github.com/philippta/flyscrape/js"
 )
 
 type NewCommand struct{}

@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	"flyscrape"
+	"github.com/philippta/flyscrape"
 )
 
 type RunCommand struct{}

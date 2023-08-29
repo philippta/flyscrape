@@ -10,11 +10,9 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
-	"time"
-
-	"flyscrape/js"
 
 	"github.com/evanw/esbuild/pkg/api"
+	"github.com/philippta/flyscrape/js"
 	v8 "rogchap.com/v8go"
 )
 
@@ -26,10 +24,6 @@ type TransformError struct {
 
 func (err TransformError) Error() string {
 	return fmt.Sprintf("%d:%d: %s", err.Line, err.Column, err.Text)
-}
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
 }
 
 func Compile(src string) (ScrapeOptions, ScrapeFunc, error) {

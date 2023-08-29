@@ -1,4 +1,4 @@
-module flyscrape
+module github.com/philippta/flyscrape
 
 go 1.20
 

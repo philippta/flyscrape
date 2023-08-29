@@ -10,8 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"flyscrape"
-
+	"github.com/philippta/flyscrape"
 	"github.com/stretchr/testify/require"
 )
 

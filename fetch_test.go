@@ -5,8 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"flyscrape"
-
+	"github.com/philippta/flyscrape"
 	"github.com/stretchr/testify/require"
 )
 
