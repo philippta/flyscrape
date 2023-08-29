@@ -1,6 +1,6 @@
 # flyscrape
 
-flyscrape is a powerful command-line tool designed to streamline the process of efficiently extracting data from websites. Whether you're a developer, data analyst, or researcher, flyscrape empowers you to effortlessly gather information from web pages and transform it into structured data. 
+flyscrape is an elegant scraping tool for efficiently extracting data from websites. Whether you're a developer, data analyst, or researcher, flyscrape empowers you to effortlessly gather information from web pages and transform it into structured data. 
 
 ## Features
 
