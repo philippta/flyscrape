@@ -16,7 +16,8 @@ func TestFetchFetch(t *testing.T) {
 
 	fetch := flyscrape.Fetch()
 
-	html, err := fetch(srv.URL)
+	req, _ := http.NewRequest("GET", srv.URL, nil)
+	html, err := fetch(req)
 	require.NoError(t, err)
 	require.Equal(t, html, "foobar")
 }
@@ -30,11 +31,12 @@ func TestFetchCachedFetch(t *testing.T) {
 
 	fetch := flyscrape.CachedFetch(flyscrape.Fetch())
 
-	html, err := fetch(srv.URL)
+	req, _ := http.NewRequest("GET", srv.URL, nil)
+	html, err := fetch(req)
 	require.NoError(t, err)
 	require.Equal(t, html, "foobar")
 
-	html, err = fetch(srv.URL)
+	html, err = fetch(req)
 	require.NoError(t, err)
 	require.Equal(t, html, "foobar")
 
@@ -49,7 +51,8 @@ func TestFetchProxiedFetch(t *testing.T) {
 
 	fetch := flyscrape.ProxiedFetch(srv.URL)
 
-	html, err := fetch("http://example.com/foo")
+	req, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	html, err := fetch(req)
 	require.NoError(t, err)
 	require.Equal(t, html, "foobar")
 }

@@ -6,6 +6,7 @@ package flyscrape
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -26,8 +27,8 @@ func ProxiedFetch(proxyURL string) FetchFunc {
 		},
 	}
 
-	return func(url string) (string, error) {
-		resp, err := client.Get(url)
+	return func(req *http.Request) (string, error) {
+		resp, err := client.Do(req)
 		if err != nil {
 			return "", err
 		}
@@ -46,24 +47,25 @@ func ProxiedFetch(proxyURL string) FetchFunc {
 func CachedFetch(fetch FetchFunc) FetchFunc {
 	cache := hashmap.New[string, string]()
 
-	return func(url string) (string, error) {
-		if html, ok := cache.Get(url); ok {
+	return func(req *http.Request) (string, error) {
+		reqKey := fmt.Sprintf("%s %s", req.Method, req.URL.String())
+		if html, ok := cache.Get(reqKey); ok {
 			return html, nil
 		}
 
-		html, err := fetch(url)
+		html, err := fetch(req)
 		if err != nil {
 			return "", err
 		}
 
-		cache.Set(url, html)
+		cache.Set(reqKey, html)
 		return html, nil
 	}
 }
 
 func Fetch() FetchFunc {
-	return func(url string) (string, error) {
-		resp, err := http.Get(url)
+	return func(req *http.Request) (string, error) {
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return "", err
 		}

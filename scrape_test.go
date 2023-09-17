@@ -24,7 +24,7 @@ func TestScrapeFollowLinks(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
+		FetchFunc: func(_ *http.Request) (string, error) {
 			return `<a href="/baz">Baz</a>
                     <a href="baz">Baz</a>
                     <a href="http://www.google.com">Google</a>`, nil
@@ -53,8 +53,8 @@ func TestScrapeDepth(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
-			switch url {
+		FetchFunc: func(req *http.Request) (string, error) {
+			switch req.URL.String() {
 			case "http://www.example.com/":
 				return `<a href="http://www.google.com">Google</a>`, nil
 			case "http://www.google.com/":
@@ -87,7 +87,7 @@ func TestScrapeAllowedDomains(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
+		FetchFunc: func(_ *http.Request) (string, error) {
 			return `<a href="http://www.google.com">Google</a>
                     <a href="http://www.duckduckgo.com">DuckDuckGo</a>`, nil
 		},
@@ -113,7 +113,7 @@ func TestScrapeAllowedDomainsAll(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
+		FetchFunc: func(_ *http.Request) (string, error) {
 			return `<a href="http://www.google.com">Google</a>
                     <a href="http://www.duckduckgo.com">DuckDuckGo</a>`, nil
 		},
@@ -141,7 +141,7 @@ func TestScrapeBlockedDomains(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
+		FetchFunc: func(_ *http.Request) (string, error) {
 			return `<a href="http://www.google.com">Google</a>
                     <a href="http://www.duckduckgo.com">DuckDuckGo</a>`, nil
 		},
@@ -167,7 +167,7 @@ func TestScrapeAllowedURLs(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
+		FetchFunc: func(_ *http.Request) (string, error) {
 			return `<a href="foo?id=123">123</a>
 			        <a href="foo?id=ABC">ABC</a>
 			        <a href="/bar">bar</a>
@@ -196,7 +196,7 @@ func TestScrapeBlockedURLs(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
+		FetchFunc: func(_ *http.Request) (string, error) {
 			return `<a href="foo?id=123">123</a>
 			        <a href="foo?id=ABC">ABC</a>
 			        <a href="/bar">bar</a>
@@ -225,7 +225,7 @@ func TestScrapeRate(t *testing.T) {
 		ScrapeFunc: func(params flyscrape.ScrapeParams) (any, error) {
 			return "foobar", nil
 		},
-		FetchFunc: func(url string) (string, error) {
+		FetchFunc: func(_ *http.Request) (string, error) {
 			return `<a href="foo">foo</a>`, nil
 		},
 	}

@@ -6,6 +6,7 @@ package flyscrape
 
 import (
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
 	"sync"
@@ -22,14 +23,15 @@ type ScrapeParams struct {
 }
 
 type ScrapeOptions struct {
-	URL            string   `json:"url"`
-	AllowedDomains []string `json:"allowedDomains"`
-	BlockedDomains []string `json:"blockedDomains"`
-	AllowedURLs    []string `json:"allowedURLs"`
-	BlockedURLs    []string `json:"blockedURLs"`
-	Proxy          string   `json:"proxy"`
-	Depth          int      `json:"depth"`
-	Rate           float64  `json:"rate"`
+	URL            string      `json:"url"`
+	AllowedDomains []string    `json:"allowedDomains"`
+	BlockedDomains []string    `json:"blockedDomains"`
+	AllowedURLs    []string    `json:"allowedURLs"`
+	BlockedURLs    []string    `json:"blockedURLs"`
+	Headers        http.Header `json:"headers"`
+	Proxy          string      `json:"proxy"`
+	Depth          int         `json:"depth"`
+	Rate           float64     `json:"rate"`
 }
 
 type ScrapeResult struct {
@@ -46,7 +48,7 @@ func (s *ScrapeResult) omit() bool {
 
 type ScrapeFunc func(ScrapeParams) (any, error)
 
-type FetchFunc func(url string) (string, error)
+type FetchFunc func(req *http.Request) (string, error)
 
 type target struct {
 	url   string
@@ -153,7 +155,16 @@ func (s *Scraper) process(job target) (res ScrapeResult) {
 	res.URL = job.url
 	res.Timestamp = time.Now()
 
-	html, err := s.FetchFunc(job.url)
+	req, err := http.NewRequest("GET", job.url, nil)
+	if err != nil {
+		res.Error = err
+		return
+	}
+	if s.ScrapeOptions.Headers != nil {
+		req.Header = s.ScrapeOptions.Headers.Clone()
+	}
+
+	html, err := s.FetchFunc(req)
 	if err != nil {
 		res.Error = err
 		return
