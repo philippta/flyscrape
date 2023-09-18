@@ -38,8 +38,8 @@ func (m *Main) Run(args []string) error {
 		return (&NewCommand{}).Run(args)
 	case "run":
 		return (&RunCommand{}).Run(args)
-	case "watch":
-		return (&WatchCommand{}).Run(args)
+	case "dev":
+		return (&DevCommand{}).Run(args)
 	default:
 		if cmd == "" || cmd == "help" || strings.HasPrefix(cmd, "-") {
 			m.Usage()
@@ -61,6 +61,6 @@ Commands:
     
     new    creates a sample scraping script
     run    runs a scraping script
-    watch  watches and re-runs a scraping script
+    dev    watches and re-runs a scraping script
 `[1:])
 }

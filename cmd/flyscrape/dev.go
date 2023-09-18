@@ -13,10 +13,10 @@ import (
 	"github.com/philippta/flyscrape"
 )
 
-type WatchCommand struct{}
+type DevCommand struct{}
 
-func (c *WatchCommand) Run(args []string) error {
-	fs := flag.NewFlagSet("flyscrape-watch", flag.ContinueOnError)
+func (c *DevCommand) Run(args []string) error {
+	fs := flag.NewFlagSet("flyscrape-dev", flag.ContinueOnError)
 	proxy := fs.String("proxy", "", "proxy")
 	fs.Usage = c.Usage
 
@@ -82,19 +82,19 @@ func (c *WatchCommand) Run(args []string) error {
 	return nil
 }
 
-func (c *WatchCommand) Usage() {
+func (c *DevCommand) Usage() {
 	fmt.Println(`
-The watch command watches the scraping script and re-runs it on any change.
+The dev command watches the scraping script and re-runs it on any change.
 Recursive scraping is disabled in this mode, only the initial URL will be scraped.
 
 Usage:
 
-    flyscrape watch SCRIPT
+    flyscrape dev SCRIPT
 
 
 Examples:
 
     # Run and watch script.
-    $ flyscrape watch example.js
+    $ flyscrape dev example.js
 `[1:])
 }

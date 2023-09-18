@@ -10,7 +10,7 @@ flyscrape is an elegant scraping tool for efficiently extracting data from websi
 
 - **Run Scripts**: Execute your scraping script using the `run` command, and watch as **flyscrape** retrieves and processes data from the specified website.
 
-- **Watch for Development**: The `watch` command allows you to watch your scraping script for changes and quickly iterate during development, helping you find the right data extraction queries.
+- **Watch for Development**: The `dev` command allows you to watch your scraping script for changes and quickly iterate during development, helping you find the right data extraction queries.
 
 ## Installation
 
@@ -46,10 +46,10 @@ flyscrape run example.js
 
 ### Watching for Development
 
-The `watch` command allows you to watch your scraping script for changes and quickly iterate during development:
+The `dev` command allows you to watch your scraping script for changes and quickly iterate during development:
 
 ```bash
-flyscrape watch example.js
+flyscrape dev example.js
 ```
 
 ## Example Script
