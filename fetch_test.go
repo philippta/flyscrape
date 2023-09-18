@@ -53,3 +53,16 @@ func TestFetchProxiedFetch(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, html, "foobar")
 }
+
+func TestFetchUserAgent(t *testing.T) {
+	var userAgent string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userAgent = r.Header.Get("User-Agent")
+	}))
+
+	fetch := flyscrape.Fetch()
+
+	_, err := fetch(srv.URL)
+	require.NoError(t, err)
+	require.Equal(t, "flyscrape/0.1", userAgent)
+}

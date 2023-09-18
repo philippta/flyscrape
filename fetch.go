@@ -13,6 +13,8 @@ import (
 	"github.com/cornelk/hashmap"
 )
 
+const userAgent = "flyscrape/0.1"
+
 func ProxiedFetch(proxyURL string) FetchFunc {
 	pu, err := url.Parse(proxyURL)
 	if err != nil {
@@ -63,7 +65,14 @@ func CachedFetch(fetch FetchFunc) FetchFunc {
 
 func Fetch() FetchFunc {
 	return func(url string) (string, error) {
-		resp, err := http.Get(url)
+		req, err := http.NewRequest(http.MethodGet, url, nil)
+		if err != nil {
+			return "", err
+		}
+
+		req.Header.Set("User-Agent", userAgent)
+
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return "", err
 		}
