@@ -18,8 +18,6 @@ type RunCommand struct{}
 
 func (c *RunCommand) Run(args []string) error {
 	fs := flag.NewFlagSet("flyscrape-run", flag.ContinueOnError)
-	noPrettyPrint := fs.Bool("no-pretty-print", false, "no-pretty-print")
-	proxy := fs.String("proxy", "", "proxy")
 	fs.Usage = c.Usage
 
 	if err := fs.Parse(args); err != nil {
@@ -41,32 +39,17 @@ func (c *RunCommand) Run(args []string) error {
 		return fmt.Errorf("failed to compile script: %w", err)
 	}
 
-	svc := flyscrape.Scraper{
-		ScrapeOptions: opts,
-		ScrapeFunc:    scrape,
-	}
-	if *proxy != "" {
-		svc.FetchFunc = flyscrape.ProxiedFetch(*proxy)
-	}
+	scraper := flyscrape.NewScraper()
+	scraper.ScrapeFunc = scrape
+	flyscrape.LoadModules(scraper, opts)
 
 	count := 0
 	start := time.Now()
 
-	for result := range svc.Scrape() {
-		if count > 0 {
-			fmt.Println(",")
-		}
-		if count == 0 {
-			fmt.Println("[")
-		}
-		if *noPrettyPrint {
-			fmt.Print(flyscrape.Print(result, "  "))
-		} else {
-			fmt.Print(flyscrape.PrettyPrint(result, "  "))
-		}
+	scraper.OnResponse(func(resp *flyscrape.Response) {
 		count++
-	}
-	fmt.Println("\n]")
+	})
+	scraper.Run()
 
 	log.Printf("Scraped %d websites in %v\n", count, time.Since(start))
 	return nil
@@ -80,18 +63,10 @@ Usage:
 
     flyscrape run SCRIPT
 
-Arguments:
-
-    -no-pretty-print
-        Disables pretty printing of scrape results.
-
 
 Examples:
 
     # Run the script.
     $ flyscrape run example.js
-
-    # Run the script with pretty printing disabled.
-    $ flyscrape run -no-pretty-print example.js
 `[1:])
 }

@@ -56,23 +56,22 @@ func (c *DevCommand) Run(args []string) error {
 			return nil
 		}
 
-		opts.Depth = 0
-		scr := flyscrape.Scraper{
-			ScrapeOptions: opts,
-			ScrapeFunc:    scrape,
-			FetchFunc:     fetch,
-		}
+		scraper := flyscrape.NewScraper()
+		scraper.ScrapeFunc = scrape
+		flyscrape.LoadModules(scraper, opts)
 
-		result := <-scr.Scrape()
-		screen.Clear()
-		screen.MoveTopLeft()
+		scraper.Run()
 
-		if result.Error != nil {
-			log.Println(result.Error)
-			return nil
-		}
+		scraper.OnResponse(func(resp *flyscrape.Response) {
+			screen.Clear()
+			screen.MoveTopLeft()
+			if resp.Error != nil {
+				log.Println(resp.Error)
+				return
+			}
+			fmt.Println(flyscrape.PrettyPrint(resp.ScrapeResult, ""))
+		})
 
-		fmt.Println(flyscrape.PrettyPrint(result, ""))
 		return nil
 	})
 	if err != nil && err != flyscrape.StopWatch {

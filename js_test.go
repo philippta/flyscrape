@@ -5,6 +5,7 @@
 package flyscrape_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/philippta/flyscrape"
@@ -81,24 +82,25 @@ func TestJSOptions(t *testing.T) {
         url: 'http://localhost/',
         depth: 5,
         allowedDomains: ['example.com'],
-        blockedDomains: ['google.com'],
-        allowedURLs: ['/foo'],
-        blockedURLs: ['/bar'],
-        proxy: 'http://proxy/',
-        rate: 1,
     }
     export default function() {}
     `
-	opts, _, err := flyscrape.Compile(js)
+	rawOpts, _, err := flyscrape.Compile(js)
 	require.NoError(t, err)
-	require.Equal(t, flyscrape.ScrapeOptions{
+
+	type options struct {
+		URL            string   `json:"url"`
+		Depth          int      `json:"depth"`
+		AllowedDomains []string `json:"allowedDomains"`
+	}
+
+	var opts options
+	err = json.Unmarshal(rawOpts, &opts)
+	require.NoError(t, err)
+
+	require.Equal(t, options{
 		URL:            "http://localhost/",
 		Depth:          5,
 		AllowedDomains: []string{"example.com"},
-		BlockedDomains: []string{"google.com"},
-		AllowedURLs:    []string{"/foo"},
-		BlockedURLs:    []string{"/bar"},
-		Proxy:          "http://proxy/",
-		Rate:           1,
 	}, opts)
 }

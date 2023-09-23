@@ -16,6 +16,8 @@ import (
 	v8 "rogchap.com/v8go"
 )
 
+type Options []byte
+
 type TransformError struct {
 	Line   int
 	Column int
@@ -26,10 +28,10 @@ func (err TransformError) Error() string {
 	return fmt.Sprintf("%d:%d: %s", err.Line, err.Column, err.Text)
 }
 
-func Compile(src string) (ScrapeOptions, ScrapeFunc, error) {
+func Compile(src string) (Options, ScrapeFunc, error) {
 	src, err := build(src)
 	if err != nil {
-		return ScrapeOptions{}, nil, err
+		return nil, nil, err
 	}
 	return vm(src)
 }
@@ -56,31 +58,30 @@ func build(src string) (string, error) {
 	return string(res.Code), nil
 }
 
-func vm(src string) (ScrapeOptions, ScrapeFunc, error) {
+func vm(src string) (Options, ScrapeFunc, error) {
 	ctx := v8.NewContext()
 	ctx.RunScript("var module = {}", "main.js")
 
 	if _, err := ctx.RunScript(removeIIFE(js.Flyscrape), "main.js"); err != nil {
-		return ScrapeOptions{}, nil, fmt.Errorf("running flyscrape bundle: %w", err)
+		return nil, nil, fmt.Errorf("running flyscrape bundle: %w", err)
 	}
 	if _, err := ctx.RunScript(`const require = () => require_flyscrape();`, "main.js"); err != nil {
-		return ScrapeOptions{}, nil, fmt.Errorf("creating require function: %w", err)
+		return nil, nil, fmt.Errorf("creating require function: %w", err)
 	}
 	if _, err := ctx.RunScript(removeIIFE(src), "main.js"); err != nil {
-		return ScrapeOptions{}, nil, fmt.Errorf("running user script: %w", err)
+		return nil, nil, fmt.Errorf("running user script: %w", err)
 	}
 
-	var opts ScrapeOptions
-	optsJSON, err := ctx.RunScript("JSON.stringify(options)", "main.js")
+	cfg, err := ctx.RunScript("JSON.stringify(options)", "main.js")
 	if err != nil {
-		return ScrapeOptions{}, nil, fmt.Errorf("reading options: %w", err)
+		return nil, nil, fmt.Errorf("reading options: %w", err)
 	}
-	if err := json.Unmarshal([]byte(optsJSON.String()), &opts); err != nil {
-		return ScrapeOptions{}, nil, fmt.Errorf("decoding options json: %w", err)
+	if !cfg.IsString() {
+		return nil, nil, fmt.Errorf("options is not a string")
 	}
 
 	scrape := func(params ScrapeParams) (any, error) {
-		suffix := randSeq(10)
+		suffix := randSeq(16)
 		ctx.Global().Set("html_"+suffix, params.HTML)
 		ctx.Global().Set("url_"+suffix, params.URL)
 		data, err := ctx.RunScript(fmt.Sprintf(`JSON.stringify(stdin_default({html: html_%s, url: url_%s}))`, suffix, suffix), "main.js")
@@ -96,7 +97,7 @@ func vm(src string) (ScrapeOptions, ScrapeFunc, error) {
 		return obj, nil
 	}
 
-	return opts, scrape, nil
+	return Options(cfg.String()), scrape, nil
 }
 
 func randSeq(n int) string {

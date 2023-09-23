@@ -26,3 +26,7 @@ func Print(v any, prefix string) string {
 	enc.Encode(v)
 	return prefix + strings.TrimSuffix(buf.String(), "\n")
 }
+
+func ParseOptions(opts Options, v any) {
+	json.Unmarshal(opts, v)
+}
