@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFollowLinks(t *testing.T) {
+func TestStartURL(t *testing.T) {
 	scraper := flyscrape.NewScraper()
 	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
 	scraper.SetTransport(flyscrape.MockTransport(200, ""))

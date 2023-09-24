@@ -16,15 +16,8 @@ type Module struct {
 	Depth int `json:"depth"`
 }
 
-func (m *Module) ID() string {
-	return "depth"
-}
-
 func (m *Module) CanRequest(url string, depth int) bool {
 	return depth <= m.Depth
 }
 
-var (
-	_ flyscrape.Module     = (*Module)(nil)
-	_ flyscrape.CanRequest = (*Module)(nil)
-)
+var _ flyscrape.CanRequest = (*Module)(nil)

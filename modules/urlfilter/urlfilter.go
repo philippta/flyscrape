@@ -23,10 +23,6 @@ type Module struct {
 	blockedURLsRE []*regexp.Regexp
 }
 
-func (m *Module) ID() string {
-	return "urlfilter"
-}
-
 func (m *Module) OnLoad(v flyscrape.Visitor) {
 	for _, pat := range m.AllowedURLs {
 		re, err := regexp.Compile(pat)
@@ -79,7 +75,6 @@ func (m *Module) CanRequest(rawurl string, depth int) bool {
 }
 
 var (
-	_ flyscrape.Module     = (*Module)(nil)
 	_ flyscrape.CanRequest = (*Module)(nil)
 	_ flyscrape.OnLoad     = (*Module)(nil)
 )

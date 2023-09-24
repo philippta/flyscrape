@@ -17,17 +17,17 @@ import (
 
 func TestDepth(t *testing.T) {
 	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/"})
+	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
 	scraper.LoadModule(&followlinks.Module{})
 	scraper.LoadModule(&depth.Module{Depth: 2})
 
 	scraper.SetTransport(func(r *http.Request) (*http.Response, error) {
 		switch r.URL.String() {
-		case "http://www.example.com/":
+		case "http://www.example.com":
 			return flyscrape.MockResponse(200, `<a href="http://www.google.com">Google</a>`)
-		case "http://www.google.com/":
+		case "http://www.google.com":
 			return flyscrape.MockResponse(200, `<a href="http://www.duckduckgo.com">DuckDuckGo</a>`)
-		case "http://www.duckduckgo.com/":
+		case "http://www.duckduckgo.com":
 			return flyscrape.MockResponse(200, `<a href="http://www.example.com">Example</a>`)
 		}
 		return flyscrape.MockResponse(200, "")
@@ -41,7 +41,7 @@ func TestDepth(t *testing.T) {
 	scraper.Run()
 
 	require.Len(t, urls, 3)
-	require.Contains(t, urls, "http://www.example.com/")
-	require.Contains(t, urls, "http://www.google.com/")
-	require.Contains(t, urls, "http://www.duckduckgo.com/")
+	require.Contains(t, urls, "http://www.example.com")
+	require.Contains(t, urls, "http://www.google.com")
+	require.Contains(t, urls, "http://www.duckduckgo.com")
 }

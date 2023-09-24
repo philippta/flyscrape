@@ -39,7 +39,7 @@ func (c *DevCommand) Run(args []string) error {
 	script := fs.Arg(0)
 
 	err := flyscrape.Watch(script, func(s string) error {
-		opts, scrape, err := flyscrape.Compile(s)
+		cfg, scrape, err := flyscrape.Compile(s)
 		if err != nil {
 			screen.Clear()
 			screen.MoveTopLeft()
@@ -58,7 +58,7 @@ func (c *DevCommand) Run(args []string) error {
 
 		scraper := flyscrape.NewScraper()
 		scraper.ScrapeFunc = scrape
-		flyscrape.LoadModules(scraper, opts)
+		flyscrape.LoadModules(scraper, cfg)
 
 		scraper.Run()
 
@@ -69,7 +69,7 @@ func (c *DevCommand) Run(args []string) error {
 				log.Println(resp.Error)
 				return
 			}
-			fmt.Println(flyscrape.PrettyPrint(resp.ScrapeResult, ""))
+			fmt.Println(flyscrape.PrettyPrint(resp.Data, ""))
 		})
 
 		return nil

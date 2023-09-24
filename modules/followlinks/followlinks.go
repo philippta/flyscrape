@@ -14,17 +14,10 @@ func init() {
 
 type Module struct{}
 
-func (m *Module) ID() string {
-	return "followlinks"
-}
-
 func (m *Module) OnResponse(resp *flyscrape.Response) {
-	for _, link := range flyscrape.ParseLinks(resp.HTML, resp.URL) {
+	for _, link := range flyscrape.ParseLinks(string(resp.Body), resp.Request.URL) {
 		resp.Visit(link)
 	}
 }
 
-var (
-	_ flyscrape.Module     = (*Module)(nil)
-	_ flyscrape.OnResponse = (*Module)(nil)
-)
+var _ flyscrape.OnResponse = (*Module)(nil)

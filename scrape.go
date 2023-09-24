@@ -8,30 +8,20 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 	"strings"
 	"sync"
-	"time"
+
+	gourl "net/url"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/cornelk/hashmap"
-	"github.com/nlnwa/whatwg-url/url"
 )
 
 type ScrapeParams struct {
 	HTML string
 	URL  string
-}
-
-type ScrapeResult struct {
-	URL       string    `json:"url"`
-	Data      any       `json:"data,omitempty"`
-	Links     []string  `json:"-"`
-	Error     error     `json:"error,omitempty"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-func (s *ScrapeResult) omit() bool {
-	return s.Error == nil && s.Data == nil
 }
 
 type ScrapeFunc func(ScrapeParams) (any, error)
@@ -43,32 +33,39 @@ type Visitor interface {
 	MarkVisited(url string)
 }
 
-type (
-	Request struct {
-		URL   string
-		Depth int
-	}
+type Request struct {
+	Method  string
+	URL     string
+	Headers http.Header
+	Cookies http.CookieJar
+	Depth   int
+}
 
-	Response struct {
-		ScrapeResult
-		HTML  string
-		Visit func(url string)
-	}
+type Response struct {
+	StatusCode int
+	Headers    http.Header
+	Body       []byte
+	Data       any
+	Error      error
+	Request    *Request
 
-	target struct {
-		url   string
-		depth int
-	}
-)
+	Visit func(url string)
+}
+
+type target struct {
+	url   string
+	depth int
+}
 
 type Scraper struct {
 	ScrapeFunc ScrapeFunc
 
-	opts    Options
-	wg      sync.WaitGroup
-	jobs    chan target
-	visited *hashmap.Map[string, struct{}]
-	modules *hashmap.Map[string, Module]
+	cfg       Config
+	wg        sync.WaitGroup
+	jobs      chan target
+	visited   *hashmap.Map[string, struct{}]
+	modules   *hashmap.Map[string, Module]
+	cookieJar *cookiejar.Jar
 
 	canRequestHandlers []func(url string, depth int) bool
 	onRequestHandlers  []func(*Request)
@@ -78,6 +75,7 @@ type Scraper struct {
 }
 
 func NewScraper() *Scraper {
+	jar, _ := cookiejar.New(nil)
 	s := &Scraper{
 		jobs:    make(chan target, 1024),
 		visited: hashmap.New[string, struct{}](),
@@ -86,6 +84,7 @@ func NewScraper() *Scraper {
 			r.Header.Set("User-Agent", "flyscrape/0.1")
 			return http.DefaultClient.Do(r)
 		},
+		cookieJar: jar,
 	}
 	return s
 }
@@ -165,58 +164,66 @@ func (s *Scraper) worker() {
 				}
 			}
 
-			res, html := s.process(job)
-			for _, handler := range s.onResponseHandlers {
-				handler(&Response{
-					ScrapeResult: res,
-					HTML:         html,
-					Visit: func(url string) {
-						s.enqueueJob(url, job.depth+1)
-					},
-				})
-			}
+			s.process(job.url, job.depth)
 		}(job)
 	}
 }
 
-func (s *Scraper) process(job target) (res ScrapeResult, html string) {
-	res.URL = job.url
-	res.Timestamp = time.Now()
-
-	req, err := http.NewRequest(http.MethodGet, job.url, nil)
-	if err != nil {
-		res.Error = err
-		return
+func (s *Scraper) process(url string, depth int) {
+	request := &Request{
+		Method:  http.MethodGet,
+		URL:     url,
+		Headers: http.Header{},
+		Cookies: s.cookieJar,
 	}
 
+	response := &Response{
+		Request: request,
+		Visit: func(url string) {
+			s.enqueueJob(url, depth+1)
+		},
+	}
+
+	defer func() {
+		for _, handler := range s.onResponseHandlers {
+			handler(response)
+		}
+	}()
+
+	req, err := http.NewRequest(request.Method, request.URL, nil)
+	if err != nil {
+		response.Error = err
+		return
+	}
+	req.Header = request.Headers
+
 	for _, handler := range s.onRequestHandlers {
-		handler(&Request{URL: job.url, Depth: job.depth})
+		handler(request)
 	}
 
 	resp, err := s.transport(req)
 	if err != nil {
-		res.Error = err
+		response.Error = err
 		return
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	response.StatusCode = resp.StatusCode
+	response.Headers = resp.Header
+
+	response.Body, err = io.ReadAll(resp.Body)
 	if err != nil {
-		res.Error = err
+		response.Error = err
 		return
 	}
 
-	html = string(body)
-
 	if s.ScrapeFunc != nil {
-		res.Data, err = s.ScrapeFunc(ScrapeParams{HTML: html, URL: job.url})
+		response.Data, err = s.ScrapeFunc(ScrapeParams{HTML: string(response.Body), URL: request.URL})
 		if err != nil {
-			res.Error = err
+			response.Error = err
 			return
 		}
 	}
-
-	return
 }
 
 func (s *Scraper) enqueueJob(url string, depth int) {
@@ -241,18 +248,22 @@ func ParseLinks(html string, origin string) []string {
 		return nil
 	}
 
-	urlParser := url.NewParser(url.WithPercentEncodeSinglePercentSign())
+	originurl, err := url.Parse(origin)
+	if err != nil {
+		return nil
+	}
 
 	uniqueLinks := make(map[string]bool)
 	doc.Find("a").Each(func(i int, s *goquery.Selection) {
 		link, _ := s.Attr("href")
 
-		parsedLink, err := urlParser.ParseRef(origin, link)
+		parsedLink, err := originurl.Parse(link)
+
 		if err != nil || !isValidLink(parsedLink) {
 			return
 		}
 
-		absLink := parsedLink.Href(true)
+		absLink := parsedLink.String()
 
 		if !uniqueLinks[absLink] {
 			links = append(links, absLink)
@@ -263,12 +274,8 @@ func ParseLinks(html string, origin string) []string {
 	return links
 }
 
-func isValidLink(link *url.Url) bool {
-	if link.Scheme() != "" && link.Scheme() != "http" && link.Scheme() != "https" {
-		return false
-	}
-
-	if strings.HasPrefix(link.String(), "javascript:") {
+func isValidLink(link *gourl.URL) bool {
+	if link.Scheme != "" && link.Scheme != "http" && link.Scheme != "https" {
 		return false
 	}
 

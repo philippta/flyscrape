@@ -34,6 +34,6 @@ func TestFollowLinks(t *testing.T) {
 	require.Contains(t, urls, "http://www.example.com/baz")
 	require.Contains(t, urls, "http://www.example.com/foo/bar")
 	require.Contains(t, urls, "http://www.example.com/foo/baz")
-	require.Contains(t, urls, "http://www.google.com/")
+	require.Contains(t, urls, "http://www.google.com")
 	require.Contains(t, urls, "http://www.google.com/baz")
 }

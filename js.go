@@ -16,7 +16,7 @@ import (
 	v8 "rogchap.com/v8go"
 )
 
-type Options []byte
+type Config []byte
 
 type TransformError struct {
 	Line   int
@@ -28,7 +28,7 @@ func (err TransformError) Error() string {
 	return fmt.Sprintf("%d:%d: %s", err.Line, err.Column, err.Text)
 }
 
-func Compile(src string) (Options, ScrapeFunc, error) {
+func Compile(src string) (Config, ScrapeFunc, error) {
 	src, err := build(src)
 	if err != nil {
 		return nil, nil, err
@@ -58,7 +58,7 @@ func build(src string) (string, error) {
 	return string(res.Code), nil
 }
 
-func vm(src string) (Options, ScrapeFunc, error) {
+func vm(src string) (Config, ScrapeFunc, error) {
 	ctx := v8.NewContext()
 	ctx.RunScript("var module = {}", "main.js")
 
@@ -72,12 +72,12 @@ func vm(src string) (Options, ScrapeFunc, error) {
 		return nil, nil, fmt.Errorf("running user script: %w", err)
 	}
 
-	cfg, err := ctx.RunScript("JSON.stringify(options)", "main.js")
+	cfg, err := ctx.RunScript("JSON.stringify(config)", "main.js")
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading options: %w", err)
+		return nil, nil, fmt.Errorf("reading config: %w", err)
 	}
 	if !cfg.IsString() {
-		return nil, nil, fmt.Errorf("options is not a string")
+		return nil, nil, fmt.Errorf("config is not a string")
 	}
 
 	scrape := func(params ScrapeParams) (any, error) {
@@ -97,7 +97,7 @@ func vm(src string) (Options, ScrapeFunc, error) {
 		return obj, nil
 	}
 
-	return Options(cfg.String()), scrape, nil
+	return Config(cfg.String()), scrape, nil
 }
 
 func randSeq(n int) string {

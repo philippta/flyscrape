@@ -34,14 +34,14 @@ func (c *RunCommand) Run(args []string) error {
 		return fmt.Errorf("failed to read script %q: %w", script, err)
 	}
 
-	opts, scrape, err := flyscrape.Compile(string(src))
+	cfg, scrape, err := flyscrape.Compile(string(src))
 	if err != nil {
 		return fmt.Errorf("failed to compile script: %w", err)
 	}
 
 	scraper := flyscrape.NewScraper()
 	scraper.ScrapeFunc = scrape
-	flyscrape.LoadModules(scraper, opts)
+	flyscrape.LoadModules(scraper, cfg)
 
 	count := 0
 	start := time.Now()

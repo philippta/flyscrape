@@ -36,7 +36,7 @@ func TestDomainfilterAllowed(t *testing.T) {
 
 	require.Len(t, urls, 2)
 	require.Contains(t, urls, "http://www.example.com")
-	require.Contains(t, urls, "http://www.google.com/")
+	require.Contains(t, urls, "http://www.google.com")
 }
 
 func TestDomainfilterAllowedAll(t *testing.T) {
@@ -61,8 +61,8 @@ func TestDomainfilterAllowedAll(t *testing.T) {
 
 	require.Len(t, urls, 3)
 	require.Contains(t, urls, "http://www.example.com")
-	require.Contains(t, urls, "http://www.duckduckgo.com/")
-	require.Contains(t, urls, "http://www.google.com/")
+	require.Contains(t, urls, "http://www.duckduckgo.com")
+	require.Contains(t, urls, "http://www.google.com")
 }
 
 func TestDomainfilterBlocked(t *testing.T) {
@@ -88,5 +88,5 @@ func TestDomainfilterBlocked(t *testing.T) {
 
 	require.Len(t, urls, 2)
 	require.Contains(t, urls, "http://www.example.com")
-	require.Contains(t, urls, "http://www.duckduckgo.com/")
+	require.Contains(t, urls, "http://www.duckduckgo.com")
 }

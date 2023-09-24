@@ -21,10 +21,6 @@ type Module struct {
 	semaphore chan struct{}
 }
 
-func (m *Module) ID() string {
-	return "ratelimit"
-}
-
 func (m *Module) OnLoad(v flyscrape.Visitor) {
 	rate := time.Duration(float64(time.Second) / m.Rate)
 
@@ -47,7 +43,6 @@ func (m *Module) OnComplete() {
 }
 
 var (
-	_ flyscrape.Module     = (*Module)(nil)
 	_ flyscrape.OnRequest  = (*Module)(nil)
 	_ flyscrape.OnLoad     = (*Module)(nil)
 	_ flyscrape.OnComplete = (*Module)(nil)

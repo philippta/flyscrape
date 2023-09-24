@@ -2,14 +2,10 @@ package flyscrape
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"sync"
 )
 
-type Module interface {
-	ID() string
-}
+type Module any
 
 type Transport interface {
 	Transport(*http.Request) (*http.Response, error)
@@ -34,32 +30,15 @@ type OnComplete interface {
 	OnComplete()
 }
 
-func RegisterModule(m Module) {
-	id := m.ID()
-	if id == "" {
-		panic("module id is missing")
-	}
-
-	globalModulesMu.Lock()
-	defer globalModulesMu.Unlock()
-
-	if _, ok := globalModules[id]; ok {
-		panic(fmt.Sprintf("module %s already registered", id))
-	}
-	globalModules[id] = m
+func RegisterModule(mod Module) {
+	globalModules = append(globalModules, mod)
 }
 
-func LoadModules(s *Scraper, opts Options) {
-	globalModulesMu.RLock()
-	defer globalModulesMu.RUnlock()
-
+func LoadModules(s *Scraper, cfg Config) {
 	for _, mod := range globalModules {
-		json.Unmarshal(opts, mod)
+		json.Unmarshal(cfg, mod)
 		s.LoadModule(mod)
 	}
 }
 
-var (
-	globalModules   = map[string]Module{}
-	globalModulesMu sync.RWMutex
-)
+var globalModules = []Module{}

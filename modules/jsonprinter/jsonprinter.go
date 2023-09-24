@@ -6,6 +6,7 @@ package jsonprinter
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/philippta/flyscrape"
 )
@@ -16,10 +17,6 @@ func init() {
 
 type Module struct {
 	first bool
-}
-
-func (m *Module) ID() string {
-	return "jsonprinter"
 }
 
 func (m *Module) OnResponse(resp *flyscrape.Response) {
@@ -33,15 +30,28 @@ func (m *Module) OnResponse(resp *flyscrape.Response) {
 		fmt.Println(",")
 	}
 
-	fmt.Print(flyscrape.PrettyPrint(resp.ScrapeResult, "  "))
+	o := output{
+		URL:       resp.Request.URL,
+		Data:      resp.Data,
+		Error:     resp.Error,
+		Timestamp: time.Now(),
+	}
+
+	fmt.Print(flyscrape.PrettyPrint(o, "  "))
 }
 
 func (m *Module) OnComplete() {
 	fmt.Println("\n]")
 }
 
+type output struct {
+	URL       string    `json:"url,omitempty"`
+	Data      any       `json:"data,omitempty"`
+	Error     error     `json:"error,omitempty"`
+	Timestamp time.Time `json:"timestamp,omitempty"`
+}
+
 var (
-	_ flyscrape.Module     = (*Module)(nil)
 	_ flyscrape.OnResponse = (*Module)(nil)
 	_ flyscrape.OnComplete = (*Module)(nil)
 )

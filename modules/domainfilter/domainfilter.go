@@ -19,10 +19,6 @@ type Module struct {
 	BlockedDomains []string `json:"blockedDomains"`
 }
 
-func (m *Module) ID() string {
-	return "domainfilter"
-}
-
 func (m *Module) OnLoad(v flyscrape.Visitor) {
 	if u, err := url.Parse(m.URL); err == nil {
 		m.AllowedDomains = append(m.AllowedDomains, u.Host())
@@ -56,7 +52,6 @@ func (m *Module) CanRequest(rawurl string, depth int) bool {
 }
 
 var (
-	_ flyscrape.Module     = (*Module)(nil)
 	_ flyscrape.CanRequest = (*Module)(nil)
 	_ flyscrape.OnLoad     = (*Module)(nil)
 )

@@ -25,7 +25,7 @@ var html = `
 var script = `
 import { parse } from "flyscrape";
 
-export const options = {
+export const config = {
     url: "https://localhost/",
 }
 
@@ -41,9 +41,9 @@ export default function({ html, url }) {
 `
 
 func TestJSScrape(t *testing.T) {
-	opts, run, err := flyscrape.Compile(script)
+	cfg, run, err := flyscrape.Compile(script)
 	require.NoError(t, err)
-	require.NotNil(t, opts)
+	require.NotNil(t, cfg)
 	require.NotNil(t, run)
 
 	result, err := run(flyscrape.ScrapeParams{
@@ -61,9 +61,9 @@ func TestJSScrape(t *testing.T) {
 }
 
 func TestJSCompileError(t *testing.T) {
-	opts, run, err := flyscrape.Compile("import foo;")
+	cfg, run, err := flyscrape.Compile("import foo;")
 	require.Error(t, err)
-	require.Empty(t, opts)
+	require.Empty(t, cfg)
 	require.Nil(t, run)
 
 	var terr flyscrape.TransformError
@@ -76,31 +76,31 @@ func TestJSCompileError(t *testing.T) {
 	})
 }
 
-func TestJSOptions(t *testing.T) {
+func TestJSConfig(t *testing.T) {
 	js := `
-    export const options = {
+    export const config = {
         url: 'http://localhost/',
         depth: 5,
         allowedDomains: ['example.com'],
     }
     export default function() {}
     `
-	rawOpts, _, err := flyscrape.Compile(js)
+	rawCfg, _, err := flyscrape.Compile(js)
 	require.NoError(t, err)
 
-	type options struct {
+	type config struct {
 		URL            string   `json:"url"`
 		Depth          int      `json:"depth"`
 		AllowedDomains []string `json:"allowedDomains"`
 	}
 
-	var opts options
-	err = json.Unmarshal(rawOpts, &opts)
+	var cfg config
+	err = json.Unmarshal(rawCfg, &cfg)
 	require.NoError(t, err)
 
-	require.Equal(t, options{
+	require.Equal(t, config{
 		URL:            "http://localhost/",
 		Depth:          5,
 		AllowedDomains: []string{"example.com"},
-	}, opts)
+	}, cfg)
 }

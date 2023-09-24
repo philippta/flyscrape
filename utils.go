@@ -27,6 +27,6 @@ func Print(v any, prefix string) string {
 	return prefix + strings.TrimSuffix(buf.String(), "\n")
 }
 
-func ParseOptions(opts Options, v any) {
-	json.Unmarshal(opts, v)
+func ParseConfig(cfg Config, v any) {
+	json.Unmarshal(cfg, v)
 }

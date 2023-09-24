@@ -17,7 +17,7 @@ import (
 
 func TestRatelimit(t *testing.T) {
 	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/"})
+	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
 	scraper.LoadModule(&followlinks.Module{})
 	scraper.LoadModule(&ratelimit.Module{
 		Rate: 100,

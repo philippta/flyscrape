@@ -59,7 +59,7 @@ Below is an example scraping script that showcases the capabilities of **flyscra
 ```javascript
 import { parse } from 'flyscrape';
 
-export const options = {
+export const config = {
     url: 'https://news.ycombinator.com/',     // Specify the URL to start scraping from.
     depth: 1,                                 // Specify how deep links should be followed.  (default = 0, no follow)
     allowedDomains: [],                       // Specify the allowed domains. ['*'] for all. (default = domain from url)

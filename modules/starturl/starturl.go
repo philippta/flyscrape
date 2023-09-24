@@ -16,15 +16,8 @@ type Module struct {
 	URL string `json:"url"`
 }
 
-func (m *Module) ID() string {
-	return "starturl"
-}
-
 func (m *Module) OnLoad(v flyscrape.Visitor) {
 	v.Visit(m.URL)
 }
 
-var (
-	_ flyscrape.Module = (*Module)(nil)
-	_ flyscrape.OnLoad = (*Module)(nil)
-)
+var _ flyscrape.OnLoad = (*Module)(nil)
