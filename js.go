@@ -18,6 +18,13 @@ import (
 
 type Config []byte
 
+type ScrapeParams struct {
+	HTML string
+	URL  string
+}
+
+type ScrapeFunc func(ScrapeParams) (any, error)
+
 type TransformError struct {
 	Line   int
 	Column int

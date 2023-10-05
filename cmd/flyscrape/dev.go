@@ -17,7 +17,6 @@ type DevCommand struct{}
 
 func (c *DevCommand) Run(args []string) error {
 	fs := flag.NewFlagSet("flyscrape-dev", flag.ContinueOnError)
-	proxy := fs.String("proxy", "", "proxy")
 	fs.Usage = c.Usage
 
 	if err := fs.Parse(args); err != nil {
@@ -28,49 +27,24 @@ func (c *DevCommand) Run(args []string) error {
 		return fmt.Errorf("too many arguments")
 	}
 
-	var fetch flyscrape.FetchFunc
-	if *proxy != "" {
-		fetch = flyscrape.ProxiedFetch(*proxy)
-	} else {
-		fetch = flyscrape.Fetch()
-	}
-
-	fetch = flyscrape.CachedFetch(fetch)
 	script := fs.Arg(0)
 
 	err := flyscrape.Watch(script, func(s string) error {
 		cfg, scrape, err := flyscrape.Compile(s)
 		if err != nil {
-			screen.Clear()
-			screen.MoveTopLeft()
-
-			if errs, ok := err.(interface{ Unwrap() []error }); ok {
-				for _, err := range errs.Unwrap() {
-					log.Printf("%s:%v\n", script, err)
-				}
-			} else {
-				log.Println(err)
-			}
-
-			// ignore compilation errors
+			printCompileErr(script, err)
 			return nil
 		}
 
 		scraper := flyscrape.NewScraper()
 		scraper.ScrapeFunc = scrape
+
 		flyscrape.LoadModules(scraper, cfg)
+		scraper.DisableModule("followlinks")
 
+		screen.Clear()
+		screen.MoveTopLeft()
 		scraper.Run()
-
-		scraper.OnResponse(func(resp *flyscrape.Response) {
-			screen.Clear()
-			screen.MoveTopLeft()
-			if resp.Error != nil {
-				log.Println(resp.Error)
-				return
-			}
-			fmt.Println(flyscrape.PrettyPrint(resp.Data, ""))
-		})
 
 		return nil
 	})
@@ -96,4 +70,17 @@ Examples:
     # Run and watch script.
     $ flyscrape dev example.js
 `[1:])
+}
+
+func printCompileErr(script string, err error) {
+	screen.Clear()
+	screen.MoveTopLeft()
+
+	if errs, ok := err.(interface{ Unwrap() []error }); ok {
+		for _, err := range errs.Unwrap() {
+			log.Printf("%s:%v\n", script, err)
+		}
+	} else {
+		log.Println(err)
+	}
 }

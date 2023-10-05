@@ -5,16 +5,22 @@
 package domainfilter_test
 
 import (
+	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/philippta/flyscrape"
 	"github.com/philippta/flyscrape/modules/domainfilter"
 	"github.com/philippta/flyscrape/modules/followlinks"
+	"github.com/philippta/flyscrape/modules/hook"
 	"github.com/philippta/flyscrape/modules/starturl"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDomainfilterAllowed(t *testing.T) {
+	var urls []string
+	var mu sync.Mutex
+
 	scraper := flyscrape.NewScraper()
 	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
 	scraper.LoadModule(&followlinks.Module{})
@@ -22,14 +28,17 @@ func TestDomainfilterAllowed(t *testing.T) {
 		URL:            "http://www.example.com",
 		AllowedDomains: []string{"www.google.com"},
 	})
-
-	scraper.SetTransport(flyscrape.MockTransport(200, `
-        <a href="http://www.google.com">Google</a>
-        <a href="http://www.duckduckgo.com">DuckDuckGo</a>`))
-
-	var urls []string
-	scraper.OnRequest(func(req *flyscrape.Request) {
-		urls = append(urls, req.URL)
+	scraper.LoadModule(hook.Module{
+		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+			return flyscrape.MockTransport(200, `
+				<a href="http://www.google.com">Google</a>
+				<a href="http://www.duckduckgo.com">DuckDuckGo</a>`)
+		},
+		ReceiveResponseFn: func(r *flyscrape.Response) {
+			mu.Lock()
+			urls = append(urls, r.Request.URL)
+			mu.Unlock()
+		},
 	})
 
 	scraper.Run()
@@ -40,6 +49,9 @@ func TestDomainfilterAllowed(t *testing.T) {
 }
 
 func TestDomainfilterAllowedAll(t *testing.T) {
+	var urls []string
+	var mu sync.Mutex
+
 	scraper := flyscrape.NewScraper()
 	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
 	scraper.LoadModule(&followlinks.Module{})
@@ -47,14 +59,17 @@ func TestDomainfilterAllowedAll(t *testing.T) {
 		URL:            "http://www.example.com",
 		AllowedDomains: []string{"*"},
 	})
-
-	scraper.SetTransport(flyscrape.MockTransport(200, `
-        <a href="http://www.google.com">Google</a>
-        <a href="http://www.duckduckgo.com">DuckDuckGo</a>`))
-
-	var urls []string
-	scraper.OnRequest(func(req *flyscrape.Request) {
-		urls = append(urls, req.URL)
+	scraper.LoadModule(hook.Module{
+		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+			return flyscrape.MockTransport(200, `
+				<a href="http://www.google.com">Google</a>
+				<a href="http://www.duckduckgo.com">DuckDuckGo</a>`)
+		},
+		ReceiveResponseFn: func(r *flyscrape.Response) {
+			mu.Lock()
+			urls = append(urls, r.Request.URL)
+			mu.Unlock()
+		},
 	})
 
 	scraper.Run()
@@ -66,6 +81,9 @@ func TestDomainfilterAllowedAll(t *testing.T) {
 }
 
 func TestDomainfilterBlocked(t *testing.T) {
+	var urls []string
+	var mu sync.Mutex
+
 	scraper := flyscrape.NewScraper()
 	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
 	scraper.LoadModule(&followlinks.Module{})
@@ -74,14 +92,17 @@ func TestDomainfilterBlocked(t *testing.T) {
 		AllowedDomains: []string{"*"},
 		BlockedDomains: []string{"www.google.com"},
 	})
-
-	scraper.SetTransport(flyscrape.MockTransport(200, `
-        <a href="http://www.google.com">Google</a>
-        <a href="http://www.duckduckgo.com">DuckDuckGo</a>`))
-
-	var urls []string
-	scraper.OnRequest(func(req *flyscrape.Request) {
-		urls = append(urls, req.URL)
+	scraper.LoadModule(hook.Module{
+		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+			return flyscrape.MockTransport(200, `
+				<a href="http://www.google.com">Google</a>
+				<a href="http://www.duckduckgo.com">DuckDuckGo</a>`)
+		},
+		ReceiveResponseFn: func(r *flyscrape.Response) {
+			mu.Lock()
+			urls = append(urls, r.Request.URL)
+			mu.Unlock()
+		},
 	})
 
 	scraper.Run()

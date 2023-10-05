@@ -5,23 +5,29 @@
 package starturl_test
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/philippta/flyscrape"
+	"github.com/philippta/flyscrape/modules/hook"
 	"github.com/philippta/flyscrape/modules/starturl"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStartURL(t *testing.T) {
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
-	scraper.SetTransport(flyscrape.MockTransport(200, ""))
-
 	var url string
 	var depth int
-	scraper.OnRequest(func(req *flyscrape.Request) {
-		url = req.URL
-		depth = req.Depth
+
+	scraper := flyscrape.NewScraper()
+	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
+	scraper.LoadModule(hook.Module{
+		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+			return flyscrape.MockTransport(200, "")
+		},
+		BuildRequestFn: func(r *flyscrape.Request) {
+			url = r.URL
+			depth = r.Depth
+		},
 	})
 
 	scraper.Run()

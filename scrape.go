@@ -9,28 +9,19 @@ import (
 	"log"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
-	"strings"
+	"slices"
 	"sync"
 
-	gourl "net/url"
-
-	"github.com/PuerkitoBio/goquery"
 	"github.com/cornelk/hashmap"
 )
 
-type ScrapeParams struct {
-	HTML string
-	URL  string
-}
-
-type ScrapeFunc func(ScrapeParams) (any, error)
-
 type FetchFunc func(url string) (string, error)
 
-type Visitor interface {
+type Context interface {
 	Visit(url string)
 	MarkVisited(url string)
+	MarkUnvisited(url string)
+	DisableModule(id string)
 }
 
 type Request struct {
@@ -57,62 +48,39 @@ type target struct {
 	depth int
 }
 
+func NewScraper() *Scraper {
+	return &Scraper{
+		jobs:    make(chan target, 1024),
+		visited: hashmap.New[string, struct{}](),
+	}
+}
+
 type Scraper struct {
 	ScrapeFunc ScrapeFunc
 
-	cfg       Config
-	wg        sync.WaitGroup
-	jobs      chan target
-	visited   *hashmap.Map[string, struct{}]
-	modules   *hashmap.Map[string, Module]
-	cookieJar *cookiejar.Jar
+	wg      sync.WaitGroup
+	jobs    chan target
+	visited *hashmap.Map[string, struct{}]
 
-	canRequestHandlers []func(url string, depth int) bool
-	onRequestHandlers  []func(*Request)
-	onResponseHandlers []func(*Response)
-	onCompleteHandlers []func()
-	transport          func(*http.Request) (*http.Response, error)
-}
-
-func NewScraper() *Scraper {
-	jar, _ := cookiejar.New(nil)
-	s := &Scraper{
-		jobs:    make(chan target, 1024),
-		visited: hashmap.New[string, struct{}](),
-		modules: hashmap.New[string, Module](),
-		transport: func(r *http.Request) (*http.Response, error) {
-			r.Header.Set("User-Agent", "flyscrape/0.1")
-			return http.DefaultClient.Do(r)
-		},
-		cookieJar: jar,
-	}
-	return s
+	modules   []Module
+	moduleIDs []string
+	client    *http.Client
 }
 
 func (s *Scraper) LoadModule(mod Module) {
-	if v, ok := mod.(Transport); ok {
-		s.SetTransport(v.Transport)
-	}
+	id := mod.ModuleInfo().ID
 
-	if v, ok := mod.(CanRequest); ok {
-		s.CanRequest(v.CanRequest)
-	}
+	s.modules = append(s.modules, mod)
+	s.moduleIDs = append(s.moduleIDs, id)
+}
 
-	if v, ok := mod.(OnRequest); ok {
-		s.OnRequest(v.OnRequest)
+func (s *Scraper) DisableModule(id string) {
+	idx := slices.Index(s.moduleIDs, id)
+	if idx == -1 {
+		return
 	}
-
-	if v, ok := mod.(OnResponse); ok {
-		s.OnResponse(v.OnResponse)
-	}
-
-	if v, ok := mod.(OnLoad); ok {
-		v.OnLoad(s)
-	}
-
-	if v, ok := mod.(OnComplete); ok {
-		s.OnComplete(v.OnComplete)
-	}
+	s.modules = slices.Delete(s.modules, idx, idx+1)
+	s.moduleIDs = slices.Delete(s.moduleIDs, idx, idx+1)
 }
 
 func (s *Scraper) Visit(url string) {
@@ -123,49 +91,47 @@ func (s *Scraper) MarkVisited(url string) {
 	s.visited.Insert(url, struct{}{})
 }
 
-func (s *Scraper) SetTransport(f func(r *http.Request) (*http.Response, error)) {
-	s.transport = f
-}
-
-func (s *Scraper) CanRequest(f func(url string, depth int) bool) {
-	s.canRequestHandlers = append(s.canRequestHandlers, f)
-}
-
-func (s *Scraper) OnRequest(f func(req *Request)) {
-	s.onRequestHandlers = append(s.onRequestHandlers, f)
-}
-
-func (s *Scraper) OnResponse(f func(resp *Response)) {
-	s.onResponseHandlers = append(s.onResponseHandlers, f)
-}
-
-func (s *Scraper) OnComplete(f func()) {
-	s.onCompleteHandlers = append(s.onCompleteHandlers, f)
+func (s *Scraper) MarkUnvisited(url string) {
+	s.visited.Del(url)
 }
 
 func (s *Scraper) Run() {
-	go s.worker()
+	for _, mod := range s.modules {
+		if v, ok := mod.(Provisioner); ok {
+			v.Provision(s)
+		}
+	}
+
+	s.initClient()
+	go s.scrape()
 	s.wg.Wait()
 	close(s.jobs)
 
-	for _, handler := range s.onCompleteHandlers {
-		handler()
+	for _, mod := range s.modules {
+		if v, ok := mod.(Finalizer); ok {
+			v.Finalize()
+		}
 	}
 }
 
-func (s *Scraper) worker() {
+func (s *Scraper) initClient() {
+	jar, _ := cookiejar.New(nil)
+	s.client = &http.Client{Jar: jar}
+
+	for _, mod := range s.modules {
+		if v, ok := mod.(TransportAdapter); ok {
+			s.client.Transport = v.AdaptTransport(s.client.Transport)
+		}
+	}
+}
+
+func (s *Scraper) scrape() {
 	for job := range s.jobs {
-		go func(job target) {
-			defer s.wg.Done()
-
-			for _, handler := range s.canRequestHandlers {
-				if !handler(job.url, job.depth) {
-					return
-				}
-			}
-
+		job := job
+		go func() {
 			s.process(job.url, job.depth)
-		}(job)
+			s.wg.Done()
+		}()
 	}
 }
 
@@ -173,8 +139,9 @@ func (s *Scraper) process(url string, depth int) {
 	request := &Request{
 		Method:  http.MethodGet,
 		URL:     url,
-		Headers: http.Header{},
-		Cookies: s.cookieJar,
+		Headers: defaultHeaders(),
+		Cookies: s.client.Jar,
+		Depth:   depth,
 	}
 
 	response := &Response{
@@ -184,11 +151,11 @@ func (s *Scraper) process(url string, depth int) {
 		},
 	}
 
-	defer func() {
-		for _, handler := range s.onResponseHandlers {
-			handler(response)
+	for _, mod := range s.modules {
+		if v, ok := mod.(RequestBuilder); ok {
+			v.BuildRequest(request)
 		}
-	}()
+	}
 
 	req, err := http.NewRequest(request.Method, request.URL, nil)
 	if err != nil {
@@ -197,11 +164,23 @@ func (s *Scraper) process(url string, depth int) {
 	}
 	req.Header = request.Headers
 
-	for _, handler := range s.onRequestHandlers {
-		handler(request)
+	for _, mod := range s.modules {
+		if v, ok := mod.(RequestValidator); ok {
+			if !v.ValidateRequest(request) {
+				return
+			}
+		}
 	}
 
-	resp, err := s.transport(req)
+	defer func() {
+		for _, mod := range s.modules {
+			if v, ok := mod.(ResponseReceiver); ok {
+				v.ReceiveResponse(response)
+			}
+		}
+	}()
+
+	resp, err := s.client.Do(req)
 	if err != nil {
 		response.Error = err
 		return
@@ -241,43 +220,9 @@ func (s *Scraper) enqueueJob(url string, depth int) {
 	}
 }
 
-func ParseLinks(html string, origin string) []string {
-	var links []string
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
-	if err != nil {
-		return nil
-	}
+func defaultHeaders() http.Header {
+	h := http.Header{}
+	h.Set("User-Agent", "flyscrape/0.1")
 
-	originurl, err := url.Parse(origin)
-	if err != nil {
-		return nil
-	}
-
-	uniqueLinks := make(map[string]bool)
-	doc.Find("a").Each(func(i int, s *goquery.Selection) {
-		link, _ := s.Attr("href")
-
-		parsedLink, err := originurl.Parse(link)
-
-		if err != nil || !isValidLink(parsedLink) {
-			return
-		}
-
-		absLink := parsedLink.String()
-
-		if !uniqueLinks[absLink] {
-			links = append(links, absLink)
-			uniqueLinks[absLink] = true
-		}
-	})
-
-	return links
-}
-
-func isValidLink(link *gourl.URL) bool {
-	if link.Scheme != "" && link.Scheme != "http" && link.Scheme != "https" {
-		return false
-	}
-
-	return true
+	return h
 }

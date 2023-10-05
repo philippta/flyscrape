@@ -5,33 +5,37 @@
 package ratelimit_test
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/philippta/flyscrape"
 	"github.com/philippta/flyscrape/modules/followlinks"
+	"github.com/philippta/flyscrape/modules/hook"
 	"github.com/philippta/flyscrape/modules/ratelimit"
 	"github.com/philippta/flyscrape/modules/starturl"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRatelimit(t *testing.T) {
+	var times []time.Time
+
 	scraper := flyscrape.NewScraper()
 	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
 	scraper.LoadModule(&followlinks.Module{})
 	scraper.LoadModule(&ratelimit.Module{
 		Rate: 100,
 	})
-
-	scraper.SetTransport(flyscrape.MockTransport(200, `<a href="foo">foo</a>`))
-
-	var times []time.Time
-	scraper.OnRequest(func(req *flyscrape.Request) {
-		times = append(times, time.Now())
+	scraper.LoadModule(hook.Module{
+		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+			return flyscrape.MockTransport(200, `<a href="foo">foo</a>`)
+		},
+		BuildRequestFn: func(r *flyscrape.Request) {
+			times = append(times, time.Now())
+		},
 	})
 
 	start := time.Now()
-
 	scraper.Run()
 
 	first := times[0].Add(-10 * time.Millisecond)

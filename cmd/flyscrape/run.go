@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/philippta/flyscrape"
+	"github.com/philippta/flyscrape/modules/hook"
 )
 
 type RunCommand struct{}
@@ -41,14 +42,18 @@ func (c *RunCommand) Run(args []string) error {
 
 	scraper := flyscrape.NewScraper()
 	scraper.ScrapeFunc = scrape
+
 	flyscrape.LoadModules(scraper, cfg)
 
 	count := 0
 	start := time.Now()
 
-	scraper.OnResponse(func(resp *flyscrape.Response) {
-		count++
+	scraper.LoadModule(hook.Module{
+		ReceiveResponseFn: func(r *flyscrape.Response) {
+			count++
+		},
 	})
+
 	scraper.Run()
 
 	log.Printf("Scraped %d websites in %v\n", count, time.Since(start))

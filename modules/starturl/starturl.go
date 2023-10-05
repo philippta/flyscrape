@@ -9,15 +9,29 @@ import (
 )
 
 func init() {
-	flyscrape.RegisterModule(new(Module))
+	flyscrape.RegisterModule(Module{})
 }
 
 type Module struct {
 	URL string `json:"url"`
 }
 
-func (m *Module) OnLoad(v flyscrape.Visitor) {
-	v.Visit(m.URL)
+func (Module) ModuleInfo() flyscrape.ModuleInfo {
+	return flyscrape.ModuleInfo{
+		ID:  "starturl",
+		New: func() flyscrape.Module { return new(Module) },
+	}
 }
 
-var _ flyscrape.OnLoad = (*Module)(nil)
+func (m *Module) Provision(ctx flyscrape.Context) {
+	if m.disabled() {
+		return
+	}
+	ctx.Visit(m.URL)
+}
+
+func (m *Module) disabled() bool {
+	return m.URL == ""
+}
+
+var _ flyscrape.Provisioner = (*Module)(nil)

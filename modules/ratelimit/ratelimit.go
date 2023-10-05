@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	flyscrape.RegisterModule(new(Module))
+	flyscrape.RegisterModule(Module{})
 }
 
 type Module struct {
@@ -21,7 +21,18 @@ type Module struct {
 	semaphore chan struct{}
 }
 
-func (m *Module) OnLoad(v flyscrape.Visitor) {
+func (Module) ModuleInfo() flyscrape.ModuleInfo {
+	return flyscrape.ModuleInfo{
+		ID:  "ratelimit",
+		New: func() flyscrape.Module { return new(Module) },
+	}
+}
+
+func (m *Module) Provision(v flyscrape.Context) {
+	if m.disabled() {
+		return
+	}
+
 	rate := time.Duration(float64(time.Second) / m.Rate)
 
 	m.ticker = time.NewTicker(rate)
@@ -34,16 +45,26 @@ func (m *Module) OnLoad(v flyscrape.Visitor) {
 	}()
 }
 
-func (m *Module) OnRequest(_ *flyscrape.Request) {
+func (m *Module) BuildRequest(_ *flyscrape.Request) {
+	if m.disabled() {
+		return
+	}
 	<-m.semaphore
 }
 
-func (m *Module) OnComplete() {
+func (m *Module) Finalize() {
+	if m.disabled() {
+		return
+	}
 	m.ticker.Stop()
 }
 
+func (m *Module) disabled() bool {
+	return m.Rate == 0
+}
+
 var (
-	_ flyscrape.OnRequest  = (*Module)(nil)
-	_ flyscrape.OnLoad     = (*Module)(nil)
-	_ flyscrape.OnComplete = (*Module)(nil)
+	_ flyscrape.RequestBuilder = (*Module)(nil)
+	_ flyscrape.Provisioner    = (*Module)(nil)
+	_ flyscrape.Finalizer      = (*Module)(nil)
 )

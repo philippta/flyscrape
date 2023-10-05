@@ -1,44 +1,101 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package flyscrape
 
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 )
 
-type Module any
-
-type Transport interface {
-	Transport(*http.Request) (*http.Response, error)
+type Module interface {
+	ModuleInfo() ModuleInfo
 }
 
-type CanRequest interface {
-	CanRequest(url string, depth int) bool
+type ModuleInfo struct {
+	ID  string
+	New func() Module
 }
 
-type OnRequest interface {
-	OnRequest(*Request)
-}
-type OnResponse interface {
-	OnResponse(*Response)
+type TransportAdapter interface {
+	AdaptTransport(http.RoundTripper) http.RoundTripper
 }
 
-type OnLoad interface {
-	OnLoad(Visitor)
+type RequestValidator interface {
+	ValidateRequest(*Request) bool
 }
 
-type OnComplete interface {
-	OnComplete()
+type RequestBuilder interface {
+	BuildRequest(*Request)
+}
+
+type ResponseReceiver interface {
+	ReceiveResponse(*Response)
+}
+
+type Provisioner interface {
+	Provision(Context)
+}
+
+type Finalizer interface {
+	Finalize()
 }
 
 func RegisterModule(mod Module) {
-	globalModules = append(globalModules, mod)
+	modulesMu.Lock()
+	defer modulesMu.Unlock()
+
+	id := mod.ModuleInfo().ID
+	if _, ok := modules[id]; ok {
+		panic("module with id: " + id + " already registered")
+	}
+	modules[mod.ModuleInfo().ID] = mod
 }
 
 func LoadModules(s *Scraper, cfg Config) {
-	for _, mod := range globalModules {
-		json.Unmarshal(cfg, mod)
+	modulesMu.RLock()
+	defer modulesMu.RUnlock()
+
+	loaded := map[string]struct{}{}
+
+	// load standard modules in order
+	for _, id := range moduleOrder {
+		mod := modules[id].ModuleInfo().New()
+		if err := json.Unmarshal(cfg, mod); err != nil {
+			panic("failed to decode config: " + err.Error())
+		}
 		s.LoadModule(mod)
+		loaded[id] = struct{}{}
+	}
+
+	// load custom modules
+	for id := range modules {
+		if _, ok := loaded[id]; ok {
+			continue
+		}
+		mod := modules[id].ModuleInfo().New()
+		if err := json.Unmarshal(cfg, mod); err != nil {
+			panic("failed to decode config: " + err.Error())
+		}
+		s.LoadModule(mod)
+		loaded[id] = struct{}{}
 	}
 }
 
-var globalModules = []Module{}
+var (
+	modules   = map[string]Module{}
+	modulesMu sync.RWMutex
+
+	moduleOrder = []string{
+		"cache",
+		"starturl",
+		"followlinks",
+		"depth",
+		"domainfilter",
+		"urlfilter",
+		"ratelimit",
+		"jsonprint",
+	}
+)

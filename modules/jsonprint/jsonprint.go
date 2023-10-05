@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package jsonprinter
+package jsonprint
 
 import (
 	"fmt"
@@ -12,20 +12,28 @@ import (
 )
 
 func init() {
-	flyscrape.RegisterModule(new(Module))
+	flyscrape.RegisterModule(Module{})
 }
 
 type Module struct {
-	first bool
+	once bool
 }
 
-func (m *Module) OnResponse(resp *flyscrape.Response) {
+func (Module) ModuleInfo() flyscrape.ModuleInfo {
+	return flyscrape.ModuleInfo{
+		ID:  "jsonprint",
+		New: func() flyscrape.Module { return new(Module) },
+	}
+}
+
+func (m *Module) ReceiveResponse(resp *flyscrape.Response) {
 	if resp.Error == nil && resp.Data == nil {
 		return
 	}
 
-	if m.first {
+	if !m.once {
 		fmt.Println("[")
+		m.once = true
 	} else {
 		fmt.Println(",")
 	}
@@ -37,10 +45,10 @@ func (m *Module) OnResponse(resp *flyscrape.Response) {
 		Timestamp: time.Now(),
 	}
 
-	fmt.Print(flyscrape.PrettyPrint(o, "  "))
+	fmt.Print(flyscrape.Prettify(o, "  "))
 }
 
-func (m *Module) OnComplete() {
+func (m *Module) Finalize() {
 	fmt.Println("\n]")
 }
 
@@ -52,6 +60,6 @@ type output struct {
 }
 
 var (
-	_ flyscrape.OnResponse = (*Module)(nil)
-	_ flyscrape.OnComplete = (*Module)(nil)
+	_ flyscrape.ResponseReceiver = (*Module)(nil)
+	_ flyscrape.Finalizer        = (*Module)(nil)
 )

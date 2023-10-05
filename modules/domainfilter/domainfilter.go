@@ -10,23 +10,39 @@ import (
 )
 
 func init() {
-	flyscrape.RegisterModule(new(Module))
+	flyscrape.RegisterModule(Module{})
 }
 
 type Module struct {
 	URL            string   `json:"url"`
 	AllowedDomains []string `json:"allowedDomains"`
 	BlockedDomains []string `json:"blockedDomains"`
+
+	active bool
 }
 
-func (m *Module) OnLoad(v flyscrape.Visitor) {
+func (Module) ModuleInfo() flyscrape.ModuleInfo {
+	return flyscrape.ModuleInfo{
+		ID:  "domainfilter",
+		New: func() flyscrape.Module { return new(Module) },
+	}
+}
+
+func (m *Module) Provision(v flyscrape.Context) {
+	if m.URL == "" {
+		return
+	}
 	if u, err := url.Parse(m.URL); err == nil {
 		m.AllowedDomains = append(m.AllowedDomains, u.Host())
 	}
 }
 
-func (m *Module) CanRequest(rawurl string, depth int) bool {
-	u, err := url.Parse(rawurl)
+func (m *Module) ValidateRequest(r *flyscrape.Request) bool {
+	if m.disabled() {
+		return true
+	}
+
+	u, err := url.Parse(r.URL)
 	if err != nil {
 		return false
 	}
@@ -51,7 +67,11 @@ func (m *Module) CanRequest(rawurl string, depth int) bool {
 	return ok
 }
 
+func (m *Module) disabled() bool {
+	return len(m.AllowedDomains) == 0 && len(m.BlockedDomains) == 0
+}
+
 var (
-	_ flyscrape.CanRequest = (*Module)(nil)
-	_ flyscrape.OnLoad     = (*Module)(nil)
+	_ flyscrape.RequestValidator = (*Module)(nil)
+	_ flyscrape.Provisioner      = (*Module)(nil)
 )

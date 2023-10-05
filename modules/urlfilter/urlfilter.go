@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	flyscrape.RegisterModule(new(Module))
+	flyscrape.RegisterModule(Module{})
 }
 
 type Module struct {
@@ -23,7 +23,18 @@ type Module struct {
 	blockedURLsRE []*regexp.Regexp
 }
 
-func (m *Module) OnLoad(v flyscrape.Visitor) {
+func (Module) ModuleInfo() flyscrape.ModuleInfo {
+	return flyscrape.ModuleInfo{
+		ID:  "urlfilter",
+		New: func() flyscrape.Module { return new(Module) },
+	}
+}
+
+func (m *Module) Provision(v flyscrape.Context) {
+	if m.disabled() {
+		return
+	}
+
 	for _, pat := range m.AllowedURLs {
 		re, err := regexp.Compile(pat)
 		if err != nil {
@@ -41,9 +52,13 @@ func (m *Module) OnLoad(v flyscrape.Visitor) {
 	}
 }
 
-func (m *Module) CanRequest(rawurl string, depth int) bool {
+func (m *Module) ValidateRequest(r *flyscrape.Request) bool {
+	if m.disabled() {
+		return true
+	}
+
 	// allow root url
-	if rawurl == m.URL {
+	if r.URL == m.URL {
 		return true
 	}
 
@@ -58,14 +73,14 @@ func (m *Module) CanRequest(rawurl string, depth int) bool {
 	}
 
 	for _, re := range m.allowedURLsRE {
-		if re.MatchString(rawurl) {
+		if re.MatchString(r.URL) {
 			ok = true
 			break
 		}
 	}
 
 	for _, re := range m.blockedURLsRE {
-		if re.MatchString(rawurl) {
+		if re.MatchString(r.URL) {
 			ok = false
 			break
 		}
@@ -74,7 +89,11 @@ func (m *Module) CanRequest(rawurl string, depth int) bool {
 	return ok
 }
 
+func (m *Module) disabled() bool {
+	return len(m.AllowedURLs) == 0 && len(m.BlockedURLs) == 0
+}
+
 var (
-	_ flyscrape.CanRequest = (*Module)(nil)
-	_ flyscrape.OnLoad     = (*Module)(nil)
+	_ flyscrape.RequestValidator = (*Module)(nil)
+	_ flyscrape.Provisioner      = (*Module)(nil)
 )

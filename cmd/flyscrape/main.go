@@ -12,10 +12,11 @@ import (
 	"os"
 	"strings"
 
+	_ "github.com/philippta/flyscrape/modules/cache"
 	_ "github.com/philippta/flyscrape/modules/depth"
 	_ "github.com/philippta/flyscrape/modules/domainfilter"
 	_ "github.com/philippta/flyscrape/modules/followlinks"
-	_ "github.com/philippta/flyscrape/modules/jsonprinter"
+	_ "github.com/philippta/flyscrape/modules/jsonprint"
 	_ "github.com/philippta/flyscrape/modules/ratelimit"
 	_ "github.com/philippta/flyscrape/modules/starturl"
 	_ "github.com/philippta/flyscrape/modules/urlfilter"
@@ -66,7 +67,7 @@ Usage:
     flyscrape <command> [arguments]
 
 Commands:
-    
+
     new    creates a sample scraping script
     run    runs a scraping script
     dev    watches and re-runs a scraping script

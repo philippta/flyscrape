@@ -7,10 +7,11 @@ package flyscrape
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 	"strings"
 )
 
-func PrettyPrint(v any, prefix string) string {
+func Prettify(v any, prefix string) string {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.SetEscapeHTML(false)
@@ -19,14 +20,8 @@ func PrettyPrint(v any, prefix string) string {
 	return prefix + strings.TrimSuffix(buf.String(), "\n")
 }
 
-func Print(v any, prefix string) string {
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	enc.SetEscapeHTML(false)
-	enc.Encode(v)
-	return prefix + strings.TrimSuffix(buf.String(), "\n")
-}
+type RoundTripFunc func(*http.Request) (*http.Response, error)
 
-func ParseConfig(cfg Config, v any) {
-	json.Unmarshal(cfg, v)
+func (f RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
+	return f(r)
 }

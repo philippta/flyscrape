@@ -9,15 +9,22 @@ import (
 )
 
 func init() {
-	flyscrape.RegisterModule(new(Module))
+	flyscrape.RegisterModule(Module{})
 }
 
 type Module struct {
 	Depth int `json:"depth"`
 }
 
-func (m *Module) CanRequest(url string, depth int) bool {
-	return depth <= m.Depth
+func (Module) ModuleInfo() flyscrape.ModuleInfo {
+	return flyscrape.ModuleInfo{
+		ID:  "depth",
+		New: func() flyscrape.Module { return new(Module) },
+	}
 }
 
-var _ flyscrape.CanRequest = (*Module)(nil)
+func (m *Module) ValidateRequest(r *flyscrape.Request) bool {
+	return r.Depth <= m.Depth
+}
+
+var _ flyscrape.RequestValidator = (*Module)(nil)
