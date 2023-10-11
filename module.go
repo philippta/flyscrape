@@ -89,13 +89,16 @@ var (
 	modulesMu sync.RWMutex
 
 	moduleOrder = []string{
+		// Transport Adapters
+		"ratelimit",
 		"cache",
+
+		// Rest
 		"starturl",
 		"followlinks",
 		"depth",
 		"domainfilter",
 		"urlfilter",
-		"ratelimit",
 		"jsonprint",
 	}
 )

@@ -18,6 +18,7 @@ import (
 type FetchFunc func(url string) (string, error)
 
 type Context interface {
+	ScriptName() string
 	Visit(url string)
 	MarkVisited(url string)
 	MarkUnvisited(url string)
@@ -57,6 +58,7 @@ func NewScraper() *Scraper {
 
 type Scraper struct {
 	ScrapeFunc ScrapeFunc
+	Script     string
 
 	wg      sync.WaitGroup
 	jobs    chan target
@@ -95,6 +97,10 @@ func (s *Scraper) MarkUnvisited(url string) {
 	s.visited.Del(url)
 }
 
+func (s *Scraper) ScriptName() string {
+	return s.Script
+}
+
 func (s *Scraper) Run() {
 	for _, mod := range s.modules {
 		if v, ok := mod.(Provisioner); ok {
@@ -116,7 +122,7 @@ func (s *Scraper) Run() {
 
 func (s *Scraper) initClient() {
 	jar, _ := cookiejar.New(nil)
-	s.client = &http.Client{Jar: jar}
+	s.client = &http.Client{Jar: jar, Transport: http.DefaultTransport}
 
 	for _, mod := range s.modules {
 		if v, ok := mod.(TransportAdapter); ok {

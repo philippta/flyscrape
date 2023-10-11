@@ -42,6 +42,7 @@ func (c *RunCommand) Run(args []string) error {
 
 	scraper := flyscrape.NewScraper()
 	scraper.ScrapeFunc = scrape
+	scraper.Script = script
 
 	flyscrape.LoadModules(scraper, cfg)
 

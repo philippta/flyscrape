@@ -5,6 +5,7 @@
 package ratelimit
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/philippta/flyscrape"
@@ -45,11 +46,14 @@ func (m *Module) Provision(v flyscrape.Context) {
 	}()
 }
 
-func (m *Module) BuildRequest(_ *flyscrape.Request) {
+func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 	if m.disabled() {
-		return
+		return t
 	}
-	<-m.semaphore
+	return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		<-m.semaphore
+		return t.RoundTrip(r)
+	})
 }
 
 func (m *Module) Finalize() {
@@ -64,7 +68,7 @@ func (m *Module) disabled() bool {
 }
 
 var (
-	_ flyscrape.RequestBuilder = (*Module)(nil)
-	_ flyscrape.Provisioner    = (*Module)(nil)
-	_ flyscrape.Finalizer      = (*Module)(nil)
+	_ flyscrape.TransportAdapter = (*Module)(nil)
+	_ flyscrape.Provisioner      = (*Module)(nil)
+	_ flyscrape.Finalizer        = (*Module)(nil)
 )

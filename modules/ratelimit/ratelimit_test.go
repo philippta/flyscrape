@@ -23,16 +23,16 @@ func TestRatelimit(t *testing.T) {
 	scraper := flyscrape.NewScraper()
 	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
 	scraper.LoadModule(&followlinks.Module{})
-	scraper.LoadModule(&ratelimit.Module{
-		Rate: 100,
-	})
 	scraper.LoadModule(hook.Module{
 		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
 			return flyscrape.MockTransport(200, `<a href="foo">foo</a>`)
 		},
-		BuildRequestFn: func(r *flyscrape.Request) {
+		ReceiveResponseFn: func(r *flyscrape.Response) {
 			times = append(times, time.Now())
 		},
+	})
+	scraper.LoadModule(&ratelimit.Module{
+		Rate: 100,
 	})
 
 	start := time.Now()

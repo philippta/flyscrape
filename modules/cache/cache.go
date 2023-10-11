@@ -9,8 +9,9 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httputil"
+	"path/filepath"
+	"strings"
 
-	"github.com/cornelk/hashmap"
 	"github.com/philippta/flyscrape"
 )
 
@@ -21,7 +22,7 @@ func init() {
 type Module struct {
 	Cache string `json:"cache"`
 
-	cache *hashmap.Map[string, []byte]
+	store Store
 }
 
 func (Module) ModuleInfo() flyscrape.ModuleInfo {
@@ -31,24 +32,28 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 	}
 }
 
-func (m *Module) Provision(flyscrape.Context) {
-	if m.disabled() {
-		return
-	}
-	if m.cache == nil {
-		m.cache = hashmap.New[string, []byte]()
+func (m *Module) Provision(ctx flyscrape.Context) {
+	switch {
+	case m.Cache == "memory":
+		m.store = NewMemStore()
+
+	case m.Cache == "file":
+		file := replaceExt(ctx.ScriptName(), ".cache")
+		m.store = NewSQLiteStore(file)
+
+	case strings.HasPrefix(m.Cache, "file:"):
+		m.store = NewSQLiteStore(strings.TrimPrefix(m.Cache, "file:"))
 	}
 }
 
 func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
-	if m.disabled() {
+	if m.store == nil {
 		return t
 	}
-
 	return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
-		key := cacheKey(r)
+		key := r.Method + " " + r.URL.String()
 
-		if b, ok := m.cache.Get(key); ok {
+		if b, ok := m.store.Get(key); ok {
 			if resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(b)), r); err == nil {
 				return resp, nil
 			}
@@ -64,15 +69,28 @@ func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 			return resp, err
 		}
 
-		m.cache.Set(key, encoded)
+		m.store.Set(key, encoded)
 		return resp, nil
 	})
 }
 
-func (m *Module) disabled() bool {
-	return m.Cache == ""
+func (m *Module) Finalize() {
+	if v, ok := m.store.(interface{ Close() }); ok {
+		v.Close()
+	}
 }
 
-func cacheKey(r *http.Request) string {
-	return r.Method + " " + r.URL.String()
+func replaceExt(filePath string, newExt string) string {
+	ext := filepath.Ext(filePath)
+	if ext != "" {
+		fileNameWithoutExt := filePath[:len(filePath)-len(ext)]
+		newFilePath := fileNameWithoutExt + newExt
+		return newFilePath
+	}
+	return filePath + newExt
+}
+
+type Store interface {
+	Get(key string) ([]byte, bool)
+	Set(key string, value []byte)
 }

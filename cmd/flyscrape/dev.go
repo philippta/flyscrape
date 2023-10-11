@@ -5,9 +5,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
 
 	"github.com/inancgumus/screen"
 	"github.com/philippta/flyscrape"
@@ -28,19 +33,28 @@ func (c *DevCommand) Run(args []string) error {
 	}
 
 	script := fs.Arg(0)
+	cachefile, err := newCacheFile()
+	if err != nil {
+		return fmt.Errorf("failed to create cache file: %w", err)
+	}
 
-	err := flyscrape.Watch(script, func(s string) error {
+	trapsignal(func() { os.RemoveAll(cachefile) })
+
+	err = flyscrape.Watch(script, func(s string) error {
 		cfg, scrape, err := flyscrape.Compile(s)
 		if err != nil {
 			printCompileErr(script, err)
 			return nil
 		}
 
+		cfg = updateCfg(cfg, "depth", 0)
+		cfg = updateCfg(cfg, "cache", "file:"+cachefile)
+
 		scraper := flyscrape.NewScraper()
 		scraper.ScrapeFunc = scrape
+		scraper.Script = script
 
 		flyscrape.LoadModules(scraper, cfg)
-		scraper.DisableModule("followlinks")
 
 		screen.Clear()
 		screen.MoveTopLeft()
@@ -83,4 +97,39 @@ func printCompileErr(script string, err error) {
 	} else {
 		log.Println(err)
 	}
+}
+
+func updateCfg(cfg flyscrape.Config, key string, value any) flyscrape.Config {
+	var m map[string]any
+	if err := json.Unmarshal(cfg, &m); err != nil {
+		return cfg
+	}
+
+	m[key] = value
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return cfg
+	}
+
+	return b
+}
+
+func newCacheFile() (string, error) {
+	cachedir, err := os.MkdirTemp("", "flyscrape-cache")
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(cachedir, "dev.cache"), nil
+}
+
+func trapsignal(f func()) {
+	sig := make(chan os.Signal, 2)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-sig
+		f()
+		os.Exit(0)
+	}()
 }
