@@ -9,10 +9,12 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/philippta/flyscrape/js"
+	"go.kuoruan.net/v8go-polyfills/console"
 	v8 "rogchap.com/v8go"
 )
 
@@ -67,6 +69,11 @@ func build(src string) (string, error) {
 
 func vm(src string) (Config, ScrapeFunc, error) {
 	ctx := v8.NewContext()
+
+	if err := console.InjectTo(ctx, console.WithOutput(os.Stderr)); err != nil {
+		return nil, nil, fmt.Errorf("injecting console: %w", err)
+	}
+
 	ctx.RunScript("var module = {}", "main.js")
 
 	if _, err := ctx.RunScript(removeIIFE(js.Flyscrape), "main.js"); err != nil {

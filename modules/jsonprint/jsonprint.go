@@ -49,7 +49,9 @@ func (m *Module) ReceiveResponse(resp *flyscrape.Response) {
 }
 
 func (m *Module) Finalize() {
-	fmt.Println("\n]")
+	if m.once {
+		fmt.Println("\n]")
+	}
 }
 
 type output struct {
