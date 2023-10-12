@@ -5,18 +5,26 @@
 package flyscrape
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
-	"os"
+	"log"
+	"net/url"
+	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 
+	"github.com/PuerkitoBio/goquery"
+	"github.com/dop251/goja"
+	gojaconsole "github.com/dop251/goja_nodejs/console"
+	"github.com/dop251/goja_nodejs/require"
 	"github.com/evanw/esbuild/pkg/api"
-	"github.com/philippta/flyscrape/js"
-	"go.kuoruan.net/v8go-polyfills/console"
-	v8 "rogchap.com/v8go"
 )
+
+//go:embed template.js
+var ScriptTemplate []byte
 
 type Config []byte
 
@@ -68,37 +76,54 @@ func build(src string) (string, error) {
 }
 
 func vm(src string) (Config, ScrapeFunc, error) {
-	ctx := v8.NewContext()
+	vm := goja.New()
 
-	if err := console.InjectTo(ctx, console.WithOutput(os.Stderr)); err != nil {
-		return nil, nil, fmt.Errorf("injecting console: %w", err)
-	}
+	registry := &require.Registry{}
+	registry.Enable(vm)
 
-	ctx.RunScript("var module = {}", "main.js")
+	gojaconsole.Enable(vm)
 
-	if _, err := ctx.RunScript(removeIIFE(js.Flyscrape), "main.js"); err != nil {
-		return nil, nil, fmt.Errorf("running flyscrape bundle: %w", err)
-	}
-	if _, err := ctx.RunScript(`const require = () => require_flyscrape();`, "main.js"); err != nil {
-		return nil, nil, fmt.Errorf("creating require function: %w", err)
-	}
-	if _, err := ctx.RunScript(removeIIFE(src), "main.js"); err != nil {
+	if _, err := vm.RunString(removeIIFE(src)); err != nil {
 		return nil, nil, fmt.Errorf("running user script: %w", err)
 	}
 
-	cfg, err := ctx.RunScript("JSON.stringify(config)", "main.js")
+	cfg, err := vm.RunString("JSON.stringify(config)")
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading config: %w", err)
 	}
-	if !cfg.IsString() {
-		return nil, nil, fmt.Errorf("config is not a string")
-	}
 
-	scrape := func(params ScrapeParams) (any, error) {
-		suffix := randSeq(16)
-		ctx.Global().Set("html_"+suffix, params.HTML)
-		ctx.Global().Set("url_"+suffix, params.URL)
-		data, err := ctx.RunScript(fmt.Sprintf(`JSON.stringify(stdin_default({html: html_%s, url: url_%s}))`, suffix, suffix), "main.js")
+	var c atomic.Uint64
+	var lock sync.Mutex
+
+	scrape := func(p ScrapeParams) (any, error) {
+		lock.Lock()
+		defer lock.Unlock()
+
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(p.HTML))
+		if err != nil {
+			return nil, err
+		}
+
+		baseurl, err := url.Parse(p.URL)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		suffix := strconv.FormatUint(c.Add(1), 10)
+		vm.Set("html_"+suffix, p.HTML)
+		vm.Set("url_"+suffix, p.URL)
+		vm.Set("doc_"+suffix, wrap(vm, doc.Selection))
+		vm.Set("absurl_"+suffix, func(ref string) string {
+			abs, err := baseurl.Parse(ref)
+			if err != nil {
+				log.Println(err)
+				return ref
+			}
+			return abs.String()
+		})
+
+		data, err := vm.RunString(fmt.Sprintf(`JSON.stringify(stdin_default({html: html_%s, doc: doc_%s, url: url_%s, absoluteURL: absurl_%s}))`, suffix, suffix, suffix, suffix))
 		if err != nil {
 			return nil, err
 		}
@@ -114,13 +139,33 @@ func vm(src string) (Config, ScrapeFunc, error) {
 	return Config(cfg.String()), scrape, nil
 }
 
-func randSeq(n int) string {
-	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
+	o := map[string]any{}
+	o["text"] = sel.Text
+	o["html"] = func() string { h, _ := goquery.OuterHtml(sel); return h }
+	o["attr"] = func(name string) string { v, _ := sel.Attr(name); return v }
+	o["hasAttr"] = func(name string) bool { _, ok := sel.Attr(name); return ok }
+	o["hasClass"] = sel.HasClass
+	o["length"] = sel.Length()
+	o["first"] = func() map[string]any { return wrap(vm, sel.First()) }
+	o["last"] = func() map[string]any { return wrap(vm, sel.Last()) }
+	o["get"] = func(index int) map[string]any { return wrap(vm, sel.Eq(index)) }
+	o["index"] = sel.Index()
+	o["find"] = func(s string) map[string]any { return wrap(vm, sel.Find(s)) }
+	o["next"] = func() map[string]any { return wrap(vm, sel.Next()) }
+	o["prev"] = func() map[string]any { return wrap(vm, sel.Prev()) }
+	o["siblings"] = func() map[string]any { return wrap(vm, sel.Siblings()) }
+	o["children"] = func() map[string]any { return wrap(vm, sel.Children()) }
+	o["parent"] = func() map[string]any { return wrap(vm, sel.Parent()) }
+	o["map"] = func(callback func(map[string]any, int) any) []any {
+		var vals []any
+		sel.Map(func(i int, s *goquery.Selection) string {
+			vals = append(vals, callback(wrap(vm, s), i))
+			return ""
+		})
+		return vals
 	}
-	return string(b)
+	return o
 }
 
 func removeIIFE(s string) string {

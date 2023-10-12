@@ -57,43 +57,32 @@ flyscrape dev example.js
 Below is an example scraping script that showcases the capabilities of **flyscrape**:
 
 ```javascript
-import { parse } from 'flyscrape';
-
 export const config = {
-    url: 'https://news.ycombinator.com/',     // Specify the URL to start scraping from.
-    depth: 1,                                 // Specify how deep links should be followed.  (default = 0, no follow)
-    allowedDomains: [],                       // Specify the allowed domains. ['*'] for all. (default = domain from url)
-    blockedDomains: [],                       // Specify the blocked domains.                (default = none)
-    allowedURLs: [],                          // Specify the allowed URLs as regex.          (default = all allowed)
-    blockedURLs: [],                          // Specify the blocked URLs as regex.          (default = non blocked)
-    proxy: '',                                // Specify the HTTP(S) proxy to use.           (default = no proxy)
-    rate: 100,                                // Specify the rate in requests per second.    (default = 100)
-}
+  url: "https://news.ycombinator.com/", // Specify the URL to start scraping from.
+  // depth: 0,                          // Specify how deep links should be followed.  (default = 0, no follow)
+  // allowedDomains: [],                // Specify the allowed domains. ['*'] for all. (default = domain from url)
+  // blockedDomains: [],                // Specify the blocked domains.                (default = none)
+  // allowedURLs: [],                   // Specify the allowed URLs as regex.          (default = all allowed)
+  // blockedURLs: [],                   // Specify the blocked URLs as regex.          (default = non blocked)
+  // rate: 100,                         // Specify the rate in requests per second.    (default = 100)
+  // cache: "file",                     // Enable file-based request caching.          (default = no cache)
+};
 
-export default function({ html, url }) {
-    const $ = parse(html);
-    const title = $('title');
-    const entries = $('.athing').toArray();
+export default function({ doc, absoluteURL }) {
+  const title = doc.find("title");
+  const posts = doc.find(".athing");
 
-    if (!entries.length) {
-        return null; // Omits scraped pages without entries.
-    }
+  return {
+    title: title.text(),
+    posts: posts.map((post) => {
+      const link = post.find(".titleline > a");
 
-    return {
-        title: title.text(),                                            // Extract the page title.
-        entries: entries.map(entry => {                                 // Extract all news entries.
-            const link = $(entry).find('.titleline > a');
-            const rank = $(entry).find('.rank');
-            const points = $(entry).next().find('.score');
-
-            return {
-                title: link.text(),                                     // Extract the title text.
-                url: link.attr('href'),                                 // Extract the link href.
-                rank: parseInt(rank.text().slice(0, -1)),               // Extract and cleanup the rank.
-                points: parseInt(points.text().replace(' points', '')), // Extract and cleanup the points.
-            }
-        }),
-    };
+      return {
+        title: link.text(),
+        url: absoluteURL(link.attr("href")),
+      };
+    }),
+  };
 }
 ```
 

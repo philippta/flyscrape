@@ -23,18 +23,14 @@ var html = `
 </html>`
 
 var script = `
-import { parse } from "flyscrape";
-
 export const config = {
     url: "https://localhost/",
 }
 
-export default function({ html, url }) {
-    const $ = parse(html);
-
+export default function({ doc, url }) {
     return {
-        headline: $("h1").text(),
-        body: $("p").text(),
+        headline: doc.find("h1").text(),
+        body: doc.find("p").text(),
         url: url,
     }
 }

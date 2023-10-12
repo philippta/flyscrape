@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/philippta/flyscrape/js"
+	"github.com/philippta/flyscrape"
 )
 
 type NewCommand struct{}
@@ -31,7 +31,7 @@ func (c *NewCommand) Run(args []string) error {
 		return fmt.Errorf("script already exists")
 	}
 
-	if err := os.WriteFile(script, js.Template, 0o644); err != nil {
+	if err := os.WriteFile(script, flyscrape.ScriptTemplate, 0o644); err != nil {
 		return fmt.Errorf("failed to create script %q: %w", script, err)
 	}
 
