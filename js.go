@@ -18,7 +18,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/dop251/goja"
-	gojaconsole "github.com/dop251/goja_nodejs/console"
+	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 	"github.com/evanw/esbuild/pkg/api"
 )
@@ -50,6 +50,7 @@ func Compile(src string) (Config, ScrapeFunc, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
 	return vm(src)
 }
 
@@ -81,7 +82,7 @@ func vm(src string) (Config, ScrapeFunc, error) {
 	registry := &require.Registry{}
 	registry.Enable(vm)
 
-	gojaconsole.Enable(vm)
+	console.Enable(vm)
 
 	if _, err := vm.RunString(removeIIFE(src)); err != nil {
 		return nil, nil, fmt.Errorf("running user script: %w", err)
@@ -101,6 +102,7 @@ func vm(src string) (Config, ScrapeFunc, error) {
 
 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(p.HTML))
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 
@@ -111,7 +113,6 @@ func vm(src string) (Config, ScrapeFunc, error) {
 		}
 
 		suffix := strconv.FormatUint(c.Add(1), 10)
-		vm.Set("html_"+suffix, p.HTML)
 		vm.Set("url_"+suffix, p.URL)
 		vm.Set("doc_"+suffix, wrap(vm, doc.Selection))
 		vm.Set("absurl_"+suffix, func(ref string) string {
@@ -123,13 +124,15 @@ func vm(src string) (Config, ScrapeFunc, error) {
 			return abs.String()
 		})
 
-		data, err := vm.RunString(fmt.Sprintf(`JSON.stringify(stdin_default({html: html_%s, doc: doc_%s, url: url_%s, absoluteURL: absurl_%s}))`, suffix, suffix, suffix, suffix))
+		data, err := vm.RunString(fmt.Sprintf(`JSON.stringify(stdin_default({doc: doc_%s, url: url_%s, absoluteURL: absurl_%s}))`, suffix, suffix, suffix))
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 
 		var obj any
 		if err := json.Unmarshal([]byte(data.String()), &obj); err != nil {
+			log.Println(err)
 			return nil, err
 		}
 
@@ -141,6 +144,7 @@ func vm(src string) (Config, ScrapeFunc, error) {
 
 func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
 	o := map[string]any{}
+	o["WARNING"] = "Forgot to call text(), html() or attr()?"
 	o["text"] = sel.Text
 	o["html"] = func() string { h, _ := goquery.OuterHtml(sel); return h }
 	o["attr"] = func(name string) string { v, _ := sel.Attr(name); return v }
@@ -150,7 +154,6 @@ func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
 	o["first"] = func() map[string]any { return wrap(vm, sel.First()) }
 	o["last"] = func() map[string]any { return wrap(vm, sel.Last()) }
 	o["get"] = func(index int) map[string]any { return wrap(vm, sel.Eq(index)) }
-	o["index"] = sel.Index()
 	o["find"] = func(s string) map[string]any { return wrap(vm, sel.Find(s)) }
 	o["next"] = func() map[string]any { return wrap(vm, sel.Next()) }
 	o["prev"] = func() map[string]any { return wrap(vm, sel.Prev()) }
@@ -162,6 +165,17 @@ func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
 		sel.Map(func(i int, s *goquery.Selection) string {
 			vals = append(vals, callback(wrap(vm, s), i))
 			return ""
+		})
+		return vals
+	}
+	o["filter"] = func(callback func(map[string]any, int) bool) []any {
+		var vals []any
+		sel.Each(func(i int, s *goquery.Selection) {
+			el := wrap(vm, s)
+			ok := callback(el, i)
+			if ok {
+				vals = append(vals, el)
+			}
 		})
 		return vals
 	}

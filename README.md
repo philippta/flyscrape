@@ -1,16 +1,76 @@
-# flyscrape
+<br />
 
-flyscrape is an elegant scraping tool for efficiently extracting data from websites. Whether you're a developer, data analyst, or researcher, flyscrape empowers you to effortlessly gather information from web pages and transform it into structured data. 
+<p align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-alt.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/logo.png">
+  <img width="200" src="docs/logo.png">
+</picture>
+
+</p>
+
+<br />
+
+<p align="center">
+<b>flyscrape</b> is an expressive and elegant web scraper, combining the speed of Go with the <br/> flexibility of JavaScript. — Focus on data extraction rather than request juggling.
+</p>
+
+<br />
 
 ## Features
 
-- **Simple and Intuitive**: **flyscrape** offers an easy-to-use command-line interface that allows you to interact with scraping scripts effortlessly.
+- Domains and URL filtering
+- Depth control
+- Request caching
+- Rate limiting
+- Development mode
+- Single binary executable
 
-- **Create New Scripts**: The `new` command enables you to generate sample scraping scripts quickly, providing you with a solid starting point for your scraping endeavors.
 
-- **Run Scripts**: Execute your scraping script using the `run` command, and watch as **flyscrape** retrieves and processes data from the specified website.
+## Example script
 
-- **Watch for Development**: The `dev` command allows you to watch your scraping script for changes and quickly iterate during development, helping you find the right data extraction queries.
+```javascript
+export const config = {
+    url: "https://news.ycombinator.com/",
+}
+
+export default function ({ doc, absoluteURL }) {
+    const title = doc.find("title");
+    const posts = doc.find(".athing");
+
+    return {
+        title: title.text(),
+        posts: posts.map((post) => {
+            const link = post.find(".titleline > a");
+
+            return {
+                title: link.text(),
+                url: link.attr("href"),
+            };
+        }),
+    }
+}
+```
+
+```bash
+$ flyscrape run hackernews.js
+[
+  {
+    "title": "Hacker News",
+    "url": "https://news.ycombinator.com/",
+    "data": {
+      "posts": [
+        {
+          "title": "Show HN: flyscrape - An expressive and elegant web scraper",
+          "url": "https://flyscrape.com"
+        },
+        ...
+      ],
+    }
+  }
+]
+```
 
 ## Installation
 
@@ -26,64 +86,99 @@ To install **flyscrape**, follow these simple steps:
 
 ## Usage
 
-**flyscrape** offers several commands to assist you in your scraping journey:
+```
+$ flyscrape
+flyscrape is an elegant scraping tool for efficiently extracting data from websites.
 
-### Creating a New Script
+Usage:
 
-Use the `new` command to create a new scraping script:
+    flyscrape <command> [arguments]
 
-```bash
+Commands:
+
+    new    creates a sample scraping script
+    run    runs a scraping script
+    dev    watches and re-runs a scraping script
+
+```
+
+### Create a new sample scraping script
+
+The `new` command allows you to create a new boilerplate sample script which helps you getting started.
+
+```
 flyscrape new example.js
 ```
 
-### Running a Script
+### Watch the script for changes during development
 
-Execute your scraping script using the `run` command:
+The `dev` command allows you to watch your scraping script for changes and quickly iterate during development. In development mode, flyscrape will not follow any links and request caching is enabled.
 
-```bash
-flyscrape run example.js
 ```
-
-### Watching for Development
-
-The `dev` command allows you to watch your scraping script for changes and quickly iterate during development:
-
-```bash
 flyscrape dev example.js
 ```
 
-## Example Script
+### Run the scraping script
+
+The `dev` command allows you to run your script to its fullest extend.
+
+```
+flyscrape run example.js
+```
+
+## Configuration
 
 Below is an example scraping script that showcases the capabilities of **flyscrape**:
 
 ```javascript
 export const config = {
-  url: "https://news.ycombinator.com/", // Specify the URL to start scraping from.
-  // depth: 0,                          // Specify how deep links should be followed.  (default = 0, no follow)
-  // allowedDomains: [],                // Specify the allowed domains. ['*'] for all. (default = domain from url)
-  // blockedDomains: [],                // Specify the blocked domains.                (default = none)
-  // allowedURLs: [],                   // Specify the allowed URLs as regex.          (default = all allowed)
-  // blockedURLs: [],                   // Specify the blocked URLs as regex.          (default = non blocked)
-  // rate: 100,                         // Specify the rate in requests per second.    (default = 100)
-  // cache: "file",                     // Enable file-based request caching.          (default = no cache)
+    url: "https://example.com/", // Specify the URL to start scraping from.
+    depth: 0,                    // Specify how deep links should be followed.  (default = 0, no follow)
+    allowedDomains: [],          // Specify the allowed domains. ['*'] for all. (default = domain from url)
+    blockedDomains: [],          // Specify the blocked domains.                (default = none)
+    allowedURLs: [],             // Specify the allowed URLs as regex.          (default = all allowed)
+    blockedURLs: [],             // Specify the blocked URLs as regex.          (default = none)
+    rate: 100,                   // Specify the rate in requests per second.    (default = no rate limit)
+    cache: "file",               // Enable file-based request caching.          (default = no cache)
 };
 
-export default function({ doc, absoluteURL }) {
-  const title = doc.find("title");
-  const posts = doc.find(".athing");
-
-  return {
-    title: title.text(),
-    posts: posts.map((post) => {
-      const link = post.find(".titleline > a");
-
-      return {
-        title: link.text(),
-        url: absoluteURL(link.attr("href")),
-      };
-    }),
-  };
+export default function ({ doc, url, absoluteURL }) {
+    // doc              - Contains the parsed HTML document
+    // url              - Contains the scraped URL
+    // absoluteURL(...) - Transforms relative URLs into absolute URLs
 }
+```
+
+## Query API
+
+```javascript
+// <div class="element" foo="bar">Hey</div>
+const el = doc.find(".element")
+el.text()                                 // "Hey"
+el.html()                                 // `<div class="element">Hey</div>`
+el.attr("foo")                            // "bar"
+el.hasAttr("foo")                         // true
+el.hasClass("element")                    // true
+
+// <ul>
+//   <li class="a">Item 1</li>
+//   <li>Item 2</li>
+//   <li>Item 3</li>
+// </ul>
+const list = doc.find("ul")
+list.children()                           // [<li class="a">Item 1</li>, <li>Item 2</li>, <li>Item 3</li>]
+
+const items = list.find("li")
+items.length()                            // 3
+items.first()                             // <li>Item 1</li>
+items.last()                              // <li>Item 3</li>
+items.get(1)                              // <li>Item 2</li>
+items.get(1).prev()                       // <li>Item 1</li>
+items.get(1).next()                       // <li>Item 3</li>
+items.get(1).parent()                     // <ul>...</ul>
+items.get(1).siblings()                   // [<li class="a">Item 1</li>, <li>Item 2</li>, <li>Item 3</li>]
+items.map(item => item.text())            // ["Item 1", "Item 2", "Item 3"]
+items.filter(item => item.hasClass("a"))  // [<li class="a">Item 1</li>]
 ```
 
 ## Contributing
