@@ -57,16 +57,16 @@ export default function ({ doc, absoluteURL }) {
 $ flyscrape run hackernews.js
 [
   {
-    "title": "Hacker News",
     "url": "https://news.ycombinator.com/",
     "data": {
+      "title": "Hacker News",
       "posts": [
         {
           "title": "Show HN: flyscrape - An expressive and elegant web scraper",
           "url": "https://flyscrape.com"
         },
         ...
-      ],
+      ]
     }
   }
 ]
@@ -120,7 +120,7 @@ flyscrape dev example.js
 
 ### Run the scraping script
 
-The `dev` command allows you to run your script to its fullest extend.
+The `run` command allows you to run your script.
 
 ```
 flyscrape run example.js
