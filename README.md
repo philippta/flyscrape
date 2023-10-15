@@ -13,7 +13,7 @@
 <br />
 
 <p align="center">
-<b>flyscrape</b> is an expressive and elegant web scraper, combining the speed of Go with the <br/> flexibility of JavaScript. — Focus on data extraction rather than request juggling.
+<b>flyscrape</b> is a standalone and scriptable web scraper, combining the speed of Go with the flexibility of JavaScript. — Focus on data extraction rather than request juggling.
 </p>
 
 <br />
@@ -74,11 +74,18 @@ $ flyscrape run hackernews.js
 
 ## Installation
 
-To install **flyscrape**, follow these simple steps:
+### Pre-compiled binary
+
+`flyscrape` is available via for MacOS, Linux and Window as a downloadable binary from the [releases page](https://github.com/philippta/flyscrape/releases).
+
+### Compile from source
+
+To compile flyscrape from source, follow these steps:
+
 
 1. Install Go: Make sure you have Go installed on your system. If not, you can download it from [https://golang.org/](https://golang.org/).
 
-2. Install **flyscrape**: Open a terminal and run the following command:
+2. Install flyscrape: Open a terminal and run the following command:
 
    ```bash
    go install github.com/philippta/flyscrape/cmd/flyscrape@latest
@@ -87,8 +94,7 @@ To install **flyscrape**, follow these simple steps:
 ## Usage
 
 ```
-$ flyscrape
-flyscrape is an elegant scraping tool for efficiently extracting data from websites.
+flyscrape is a standalone and scriptable web scraper for efficiently extracting data from websites.
 
 Usage:
 
@@ -128,7 +134,7 @@ flyscrape run example.js
 
 ## Configuration
 
-Below is an example scraping script that showcases the capabilities of **flyscrape**:
+Below is an example scraping script that showcases the capabilities of flyscrape:
 
 ```javascript
 export const config = {

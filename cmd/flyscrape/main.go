@@ -60,7 +60,7 @@ func (m *Main) Run(args []string) error {
 
 func (m *Main) Usage() {
 	fmt.Println(`
-flyscrape is an elegant scraping tool for efficiently extracting data from websites.
+flyscrape is a standalone and scriptable web scraper for efficiently extracting data from websites.
 
 Usage:
 
