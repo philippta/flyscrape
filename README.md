@@ -140,6 +140,7 @@ Below is an example scraping script that showcases the capabilities of flyscrape
 export const config = {
     url: "https://example.com/", // Specify the URL to start scraping from.
     depth: 0,                    // Specify how deep links should be followed.  (default = 0, no follow)
+    follow: [],                  // Speficy the css selectors to follow         (default = ["a[href]"])
     allowedDomains: [],          // Specify the allowed domains. ['*'] for all. (default = domain from url)
     blockedDomains: [],          // Specify the blocked domains.                (default = none)
     allowedURLs: [],             // Specify the allowed URLs as regex.          (default = all allowed)

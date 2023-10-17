@@ -6,6 +6,7 @@ package followlinks
 
 import (
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -16,7 +17,9 @@ func init() {
 	flyscrape.RegisterModule(Module{})
 }
 
-type Module struct{}
+type Module struct {
+	Follow []string `json:"follow"`
+}
 
 func (Module) ModuleInfo() flyscrape.ModuleInfo {
 	return flyscrape.ModuleInfo{
@@ -25,13 +28,19 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 	}
 }
 
+func (m *Module) Provision(ctx flyscrape.Context) {
+	if len(m.Follow) == 0 {
+		m.Follow = []string{"a[href]"}
+	}
+}
+
 func (m *Module) ReceiveResponse(resp *flyscrape.Response) {
-	for _, link := range parseLinks(string(resp.Body), resp.Request.URL) {
+	for _, link := range m.parseLinks(string(resp.Body), resp.Request.URL) {
 		resp.Visit(link)
 	}
 }
 
-func parseLinks(html string, origin string) []string {
+func (m *Module) parseLinks(html string, origin string) []string {
 	var links []string
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
@@ -44,22 +53,26 @@ func parseLinks(html string, origin string) []string {
 	}
 
 	uniqueLinks := make(map[string]bool)
-	doc.Find("a").Each(func(i int, s *goquery.Selection) {
-		link, _ := s.Attr("href")
 
-		parsedLink, err := originurl.Parse(link)
+	for _, selector := range m.Follow {
+		attr := parseSelectorAttr(selector)
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			link, _ := s.Attr(attr)
 
-		if err != nil || !isValidLink(parsedLink) {
-			return
-		}
+			parsedLink, err := originurl.Parse(link)
 
-		absLink := parsedLink.String()
+			if err != nil || !isValidLink(parsedLink) {
+				return
+			}
 
-		if !uniqueLinks[absLink] {
-			links = append(links, absLink)
-			uniqueLinks[absLink] = true
-		}
-	})
+			absLink := parsedLink.String()
+
+			if !uniqueLinks[absLink] {
+				links = append(links, absLink)
+				uniqueLinks[absLink] = true
+			}
+		})
+	}
 
 	return links
 }
@@ -72,4 +85,26 @@ func isValidLink(link *url.URL) bool {
 	return true
 }
 
-var _ flyscrape.ResponseReceiver = (*Module)(nil)
+func parseSelectorAttr(sel string) string {
+	matches := selectorExpr.FindAllString(sel, -1)
+	if len(matches) == 0 {
+		return "href"
+	}
+
+	attr := attrExpr.FindString(matches[len(matches)-1])
+	if attr == "" {
+		return "href"
+	}
+
+	return attr
+}
+
+var (
+	_ flyscrape.Provisioner      = (*Module)(nil)
+	_ flyscrape.ResponseReceiver = (*Module)(nil)
+)
+
+var (
+	selectorExpr = regexp.MustCompile(`\[(.*?)\]`)
+	attrExpr     = regexp.MustCompile(`[\w-]+`)
+)
