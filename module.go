@@ -89,16 +89,10 @@ var (
 	modulesMu sync.RWMutex
 
 	moduleOrder = []string{
-		// Transport Adapters
+		// Transport adapters must be loaded in a specific order.
+		// All other modules can be loaded in any order.
+		"proxy",
 		"ratelimit",
 		"cache",
-
-		// Rest
-		"starturl",
-		"followlinks",
-		"depth",
-		"domainfilter",
-		"urlfilter",
-		"jsonprint",
 	}
 )

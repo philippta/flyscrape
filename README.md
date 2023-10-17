@@ -24,6 +24,7 @@
 - Depth control
 - Request caching
 - Rate limiting
+- HTTP(s) Proxy support
 - Development mode
 - Single binary executable
 
@@ -146,6 +147,7 @@ export const config = {
     allowedURLs: [],             // Specify the allowed URLs as regex.          (default = all allowed)
     blockedURLs: [],             // Specify the blocked URLs as regex.          (default = none)
     rate: 100,                   // Specify the rate in requests per second.    (default = no rate limit)
+    proxies: [],                 // Specify the HTTP(s) proxy URLs.             (default = no proxy)
     cache: "file",               // Enable file-based request caching.          (default = no cache)
 };
 
