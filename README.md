@@ -76,6 +76,8 @@ $ flyscrape run hackernews.js
 ]
 ```
 
+Check out the [examples folder](examples) for more detailed examples.
+
 ## Installation
 
 ### Pre-compiled binary
