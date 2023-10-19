@@ -64,6 +64,12 @@ func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 			return resp, err
 		}
 
+		// Avoid caching when running into rate limits or
+		// when the page errored.
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return resp, err
+		}
+
 		encoded, err := httputil.DumpResponse(resp, true)
 		if err != nil {
 			return resp, err
