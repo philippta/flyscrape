@@ -18,16 +18,19 @@
 
 <br />
 
+<p align="center">
+<a href="#installation">Installation</a> · <a href="/docs">Documentation</a> · <a href="https://github.com/philippta/flyscrape/releases">Releases</a>
+</p>
+
 ## Features
 
-- Domains and URL filtering
-- Depth control
-- Request caching
-- Rate limiting
-- HTTP(s) Proxy support
-- Development mode
-- Single binary executable
-
+- **Highly Configurable:** 10 options to fine-tune your scraper.
+- **Standalone:** flyscrape comes as a single binary executable.
+- **Scriptable:** Use JavaScript to write your data extraction logic.
+- **Simple API:** Extract data from HTML pages with a familiar API.
+- **Fast Iteration:** Use the development mode to get quick feedback.
+- **Request Caching:** Re-run scripts on websites you already scraped.
+- **Zero Dependencies:** No need to fill up your disk with npm packages.
 
 ## Example script
 
@@ -63,8 +66,8 @@ $ flyscrape run hackernews.js
       "title": "Hacker News",
       "posts": [
         {
-          "title": "Show HN: flyscrape - An expressive and elegant web scraper",
-          "url": "https://flyscrape.com"
+          "title": "Show HN: flyscrape - An standalone and scriptable web scraper",
+          "url": "https://flyscrape.com/"
         },
         ...
       ]
@@ -77,12 +80,11 @@ $ flyscrape run hackernews.js
 
 ### Pre-compiled binary
 
-`flyscrape` is available via for MacOS, Linux and Window as a downloadable binary from the [releases page](https://github.com/philippta/flyscrape/releases).
+`flyscrape` is available for MacOS, Linux and Windows as a downloadable binary from the [releases page](https://github.com/philippta/flyscrape/releases).
 
 ### Compile from source
 
 To compile flyscrape from source, follow these steps:
-
 
 1. Install Go: Make sure you have Go installed on your system. If not, you can download it from [https://golang.org/](https://golang.org/).
 
@@ -106,36 +108,11 @@ Commands:
     new    creates a sample scraping script
     run    runs a scraping script
     dev    watches and re-runs a scraping script
-
-```
-
-### Create a new sample scraping script
-
-The `new` command allows you to create a new boilerplate sample script which helps you getting started.
-
-```
-flyscrape new example.js
-```
-
-### Watch the script for changes during development
-
-The `dev` command allows you to watch your scraping script for changes and quickly iterate during development. In development mode, flyscrape will not follow any links and request caching is enabled.
-
-```
-flyscrape dev example.js
-```
-
-### Run the scraping script
-
-The `run` command allows you to run your script.
-
-```
-flyscrape run example.js
 ```
 
 ## Configuration
 
-Below is an example scraping script that showcases the capabilities of flyscrape:
+Below is an example scraping script that showcases the capabilities of flyscrape. For a full documentation of all configuration options, visit the [documentation page](docs/readme.md#configuration).
 
 ```javascript
 export const config = {
@@ -147,7 +124,7 @@ export const config = {
     allowedURLs: [],             // Specify the allowed URLs as regex.          (default = all allowed)
     blockedURLs: [],             // Specify the blocked URLs as regex.          (default = none)
     rate: 100,                   // Specify the rate in requests per second.    (default = no rate limit)
-    proxies: [],                 // Specify the HTTP(s) proxy URLs.             (default = no proxy)
+    proxies: [],                 // Specify the HTTP(S) proxy URLs.             (default = no proxy)
     cache: "file",               // Enable file-based request caching.          (default = no cache)
 };
 
@@ -190,6 +167,6 @@ items.map(item => item.text())            // ["Item 1", "Item 2", "Item 3"]
 items.filter(item => item.hasClass("a"))  // [<li class="a">Item 1</li>]
 ```
 
-## Contributing
+## Issues and Suggestions
 
-We welcome contributions from the community! If you encounter any issues or have suggestions for improvement, please [submit an issue](https://github.com/philippta/flyscrape/issues).
+If you encounter any issues or have suggestions for improvement, please [submit an issue](https://github.com/philippta/flyscrape/issues).
