@@ -20,13 +20,17 @@ func TestProxy(t *testing.T) {
 	p := newProxy(func() { called = true })
 	defer p.Close()
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
-	scraper.LoadModule(&proxy.Module{
-		Proxies: []string{p.URL},
-	})
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com"},
+		&proxy.Module{
+			Proxies: []string{p.URL},
+		},
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
+
 	require.True(t, called)
 }
 

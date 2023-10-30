@@ -7,6 +7,8 @@ package flyscrape
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -24,4 +26,18 @@ type RoundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return f(r)
+}
+
+func MockTransport(statusCode int, html string) RoundTripFunc {
+	return func(*http.Request) (*http.Response, error) {
+		return MockResponse(statusCode, html)
+	}
+}
+
+func MockResponse(statusCode int, html string) (*http.Response, error) {
+	return &http.Response{
+		StatusCode: statusCode,
+		Status:     fmt.Sprintf("%d %s", statusCode, http.StatusText(statusCode)),
+		Body:       io.NopCloser(strings.NewReader(html)),
+	}, nil
 }

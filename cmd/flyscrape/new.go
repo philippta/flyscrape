@@ -21,7 +21,8 @@ func (c *NewCommand) Run(args []string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	} else if fs.NArg() == 0 || fs.Arg(0) == "" {
-		return fmt.Errorf("script path required")
+		c.Usage()
+		return flag.ErrHelp
 	} else if fs.NArg() > 1 {
 		return fmt.Errorf("too many arguments")
 	}
@@ -46,7 +47,6 @@ The new command creates a new scraping script.
 Usage:
 
     flyscrape new SCRIPT
-
 
 Examples:
 

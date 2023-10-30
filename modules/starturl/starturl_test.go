@@ -18,18 +18,21 @@ func TestStartURL(t *testing.T) {
 	var url string
 	var depth int
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, "")
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/foo/bar"},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, "")
+			},
+			BuildRequestFn: func(r *flyscrape.Request) {
+				url = r.URL
+				depth = r.Depth
+			},
 		},
-		BuildRequestFn: func(r *flyscrape.Request) {
-			url = r.URL
-			depth = r.Depth
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Equal(t, "http://www.example.com/foo/bar", url)

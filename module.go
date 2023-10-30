@@ -54,11 +54,12 @@ func RegisterModule(mod Module) {
 	modules[mod.ModuleInfo().ID] = mod
 }
 
-func LoadModules(s *Scraper, cfg Config) {
+func LoadModules(cfg Config) []Module {
 	modulesMu.RLock()
 	defer modulesMu.RUnlock()
 
 	loaded := map[string]struct{}{}
+	mods := []Module{}
 
 	// load standard modules in order
 	for _, id := range moduleOrder {
@@ -66,7 +67,7 @@ func LoadModules(s *Scraper, cfg Config) {
 		if err := json.Unmarshal(cfg, mod); err != nil {
 			panic("failed to decode config: " + err.Error())
 		}
-		s.LoadModule(mod)
+		mods = append(mods, mod)
 		loaded[id] = struct{}{}
 	}
 
@@ -79,9 +80,11 @@ func LoadModules(s *Scraper, cfg Config) {
 		if err := json.Unmarshal(cfg, mod); err != nil {
 			panic("failed to decode config: " + err.Error())
 		}
-		s.LoadModule(mod)
+		mods = append(mods, mod)
 		loaded[id] = struct{}{}
 	}
+
+	return mods
 }
 
 var (

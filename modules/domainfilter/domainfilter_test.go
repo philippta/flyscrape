@@ -21,26 +21,29 @@ func TestDomainfilterAllowed(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
-	scraper.LoadModule(&followlinks.Module{})
-	scraper.LoadModule(&domainfilter.Module{
-		URL:            "http://www.example.com",
-		AllowedDomains: []string{"www.google.com"},
-	})
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com"},
+		&followlinks.Module{},
+		&domainfilter.Module{
+			URL:            "http://www.example.com",
+			AllowedDomains: []string{"www.google.com"},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="http://www.google.com">Google</a>
 				<a href="http://www.duckduckgo.com">DuckDuckGo</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 2)
@@ -52,26 +55,29 @@ func TestDomainfilterAllowedAll(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
-	scraper.LoadModule(&followlinks.Module{})
-	scraper.LoadModule(&domainfilter.Module{
-		URL:            "http://www.example.com",
-		AllowedDomains: []string{"*"},
-	})
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com"},
+		&followlinks.Module{},
+		&domainfilter.Module{
+			URL:            "http://www.example.com",
+			AllowedDomains: []string{"*"},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="http://www.google.com">Google</a>
 				<a href="http://www.duckduckgo.com">DuckDuckGo</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 3)
@@ -84,27 +90,30 @@ func TestDomainfilterBlocked(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
-	scraper.LoadModule(&followlinks.Module{})
-	scraper.LoadModule(&domainfilter.Module{
-		URL:            "http://www.example.com",
-		AllowedDomains: []string{"*"},
-		BlockedDomains: []string{"www.google.com"},
-	})
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com"},
+		&followlinks.Module{},
+		&domainfilter.Module{
+			URL:            "http://www.example.com",
+			AllowedDomains: []string{"*"},
+			BlockedDomains: []string{"www.google.com"},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="http://www.google.com">Google</a>
 				<a href="http://www.duckduckgo.com">DuckDuckGo</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 2)

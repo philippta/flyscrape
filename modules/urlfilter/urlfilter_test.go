@@ -21,28 +21,31 @@ func TestURLFilterAllowed(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/"})
-	scraper.LoadModule(&followlinks.Module{})
-	scraper.LoadModule(&urlfilter.Module{
-		URL:         "http://www.example.com/",
-		AllowedURLs: []string{`/foo\?id=\d+`, `/bar$`},
-	})
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/"},
+		&followlinks.Module{},
+		&urlfilter.Module{
+			URL:         "http://www.example.com/",
+			AllowedURLs: []string{`/foo\?id=\d+`, `/bar$`},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="foo?id=123">123</a>
 				<a href="foo?id=ABC">ABC</a>
 				<a href="/bar">bar</a>
 				<a href="/barz">barz</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 3)
@@ -55,28 +58,31 @@ func TestURLFilterBlocked(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/"})
-	scraper.LoadModule(&followlinks.Module{})
-	scraper.LoadModule(&urlfilter.Module{
-		URL:         "http://www.example.com/",
-		BlockedURLs: []string{`/foo\?id=\d+`, `/bar$`},
-	})
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/"},
+		&followlinks.Module{},
+		&urlfilter.Module{
+			URL:         "http://www.example.com/",
+			BlockedURLs: []string{`/foo\?id=\d+`, `/bar$`},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="foo?id=123">123</a>
 				<a href="foo?id=ABC">ABC</a>
 				<a href="/bar">bar</a>
 				<a href="/barz">barz</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 3)

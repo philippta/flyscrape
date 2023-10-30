@@ -20,22 +20,25 @@ import (
 func TestRatelimit(t *testing.T) {
 	var times []time.Time
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com"})
-	scraper.LoadModule(&followlinks.Module{})
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `<a href="foo">foo</a>`)
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com"},
+		&followlinks.Module{},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `<a href="foo">foo</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				times = append(times, time.Now())
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			times = append(times, time.Now())
+		&ratelimit.Module{
+			Rate: 100,
 		},
-	})
-	scraper.LoadModule(&ratelimit.Module{
-		Rate: 100,
-	})
+	}
 
 	start := time.Now()
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	first := times[0].Add(-10 * time.Millisecond)

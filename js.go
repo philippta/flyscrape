@@ -11,10 +11,8 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/dop251/goja"
@@ -45,19 +43,32 @@ func (err TransformError) Error() string {
 	return fmt.Sprintf("%d:%d: %s", err.Line, err.Column, err.Text)
 }
 
-func Compile(src string) (Config, ScrapeFunc, error) {
+type Exports map[string]any
+
+func (e Exports) Config() []byte {
+	b, _ := json.Marshal(e["config"])
+	return b
+}
+
+func (e Exports) Scrape(p ScrapeParams) (any, error) {
+	fn := e["__scrape"].(ScrapeFunc)
+	return fn(p)
+}
+
+type Imports map[string]map[string]any
+
+func Compile(src string, imports Imports) (Exports, error) {
 	src, err := build(src)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	return vm(src)
+	return vm(src, imports)
 }
 
 func build(src string) (string, error) {
 	res := api.Transform(src, api.TransformOptions{
-		Platform: api.PlatformBrowser,
-		Format:   api.FormatIIFE,
+		Platform: api.PlatformNode,
+		Format:   api.FormatCommonJS,
 	})
 
 	var errs []error
@@ -76,31 +87,67 @@ func build(src string) (string, error) {
 	return string(res.Code), nil
 }
 
-func vm(src string) (Config, ScrapeFunc, error) {
+func vm(src string, imports Imports) (Exports, error) {
 	vm := goja.New()
-
 	registry := &require.Registry{}
-	registry.Enable(vm)
 
+	registry.Enable(vm)
 	console.Enable(vm)
 
-	if _, err := vm.RunString(removeIIFE(src)); err != nil {
-		return nil, nil, fmt.Errorf("running user script: %w", err)
+	for module, pkg := range imports {
+		pkg := pkg
+		registry.RegisterNativeModule(module, func(vm *goja.Runtime, o *goja.Object) {
+			exports := vm.NewObject()
+
+			for ident, val := range pkg {
+				exports.Set(ident, val)
+			}
+
+			o.Set("exports", exports)
+		})
 	}
 
-	cfg, err := vm.RunString("JSON.stringify(config)")
+	if _, err := vm.RunString("module = {}"); err != nil {
+		return nil, fmt.Errorf("running defining module: %w", err)
+	}
+	if _, err := vm.RunString(src); err != nil {
+		return nil, fmt.Errorf("running user script: %w", err)
+	}
+
+	v, err := vm.RunString("module.exports")
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading config: %w", err)
+		return nil, fmt.Errorf("reading config: %w", err)
 	}
 
-	var c atomic.Uint64
+	exports := Exports{}
+	obj := v.ToObject(vm)
+	for _, key := range obj.Keys() {
+		exports[key] = obj.Get(key).Export()
+	}
+
+	exports["__scrape"] = scrape(vm)
+
+	return exports, nil
+}
+
+func scrape(vm *goja.Runtime) ScrapeFunc {
 	var lock sync.Mutex
 
-	scrape := func(p ScrapeParams) (any, error) {
+	defaultfn, err := vm.RunString("module.exports.default")
+	if err != nil {
+		return func(ScrapeParams) (any, error) { return nil, errors.New("no scrape function defined") }
+	}
+
+	scrapefn, ok := defaultfn.Export().(func(goja.FunctionCall) goja.Value)
+	if !ok {
+		return func(ScrapeParams) (any, error) { return nil, errors.New("default export is not a function") }
+	}
+
+	return func(p ScrapeParams) (any, error) {
 		lock.Lock()
 		defer lock.Unlock()
 
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(p.HTML))
+		doc, err := DocumentFromString(p.HTML)
 		if err != nil {
 			log.Println(err)
 			return nil, err
@@ -112,37 +159,35 @@ func vm(src string) (Config, ScrapeFunc, error) {
 			return nil, err
 		}
 
-		suffix := strconv.FormatUint(c.Add(1), 10)
-		vm.Set("url_"+suffix, p.URL)
-		vm.Set("doc_"+suffix, wrap(vm, doc.Selection))
-		vm.Set("absurl_"+suffix, func(ref string) string {
+		absoluteURL := func(ref string) string {
 			abs, err := baseurl.Parse(ref)
 			if err != nil {
 				log.Println(err)
 				return ref
 			}
 			return abs.String()
-		})
-
-		data, err := vm.RunString(fmt.Sprintf(`JSON.stringify(stdin_default({doc: doc_%s, url: url_%s, absoluteURL: absurl_%s}))`, suffix, suffix, suffix))
-		if err != nil {
-			log.Println(err)
-			return nil, err
 		}
 
-		var obj any
-		if err := json.Unmarshal([]byte(data.String()), &obj); err != nil {
-			log.Println(err)
-			return nil, err
-		}
+		o := vm.NewObject()
+		o.Set("url", p.URL)
+		o.Set("doc", doc)
+		o.Set("absoluteURL", absoluteURL)
 
-		return obj, nil
+		ret := scrapefn(goja.FunctionCall{Arguments: []goja.Value{o}}).Export()
+		return ret, nil
 	}
-
-	return Config(cfg.String()), scrape, nil
 }
 
-func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
+func DocumentFromString(s string) (map[string]any, error) {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(s))
+	if err != nil {
+		return nil, err
+	}
+
+	return Document(doc.Selection), nil
+}
+
+func Document(sel *goquery.Selection) map[string]any {
 	o := map[string]any{}
 	o["WARNING"] = "Forgot to call text(), html() or attr()?"
 	o["text"] = sel.Text
@@ -151,19 +196,19 @@ func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
 	o["hasAttr"] = func(name string) bool { _, ok := sel.Attr(name); return ok }
 	o["hasClass"] = sel.HasClass
 	o["length"] = sel.Length()
-	o["first"] = func() map[string]any { return wrap(vm, sel.First()) }
-	o["last"] = func() map[string]any { return wrap(vm, sel.Last()) }
-	o["get"] = func(index int) map[string]any { return wrap(vm, sel.Eq(index)) }
-	o["find"] = func(s string) map[string]any { return wrap(vm, sel.Find(s)) }
-	o["next"] = func() map[string]any { return wrap(vm, sel.Next()) }
-	o["prev"] = func() map[string]any { return wrap(vm, sel.Prev()) }
-	o["siblings"] = func() map[string]any { return wrap(vm, sel.Siblings()) }
-	o["children"] = func() map[string]any { return wrap(vm, sel.Children()) }
-	o["parent"] = func() map[string]any { return wrap(vm, sel.Parent()) }
+	o["first"] = func() map[string]any { return Document(sel.First()) }
+	o["last"] = func() map[string]any { return Document(sel.Last()) }
+	o["get"] = func(index int) map[string]any { return Document(sel.Eq(index)) }
+	o["find"] = func(s string) map[string]any { return Document(sel.Find(s)) }
+	o["next"] = func() map[string]any { return Document(sel.Next()) }
+	o["prev"] = func() map[string]any { return Document(sel.Prev()) }
+	o["siblings"] = func() map[string]any { return Document(sel.Siblings()) }
+	o["children"] = func() map[string]any { return Document(sel.Children()) }
+	o["parent"] = func() map[string]any { return Document(sel.Parent()) }
 	o["map"] = func(callback func(map[string]any, int) any) []any {
 		var vals []any
 		sel.Map(func(i int, s *goquery.Selection) string {
-			vals = append(vals, callback(wrap(vm, s), i))
+			vals = append(vals, callback(Document(s), i))
 			return ""
 		})
 		return vals
@@ -171,7 +216,7 @@ func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
 	o["filter"] = func(callback func(map[string]any, int) bool) []any {
 		var vals []any
 		sel.Each(func(i int, s *goquery.Selection) {
-			el := wrap(vm, s)
+			el := Document(s)
 			ok := callback(el, i)
 			if ok {
 				vals = append(vals, el)
@@ -180,10 +225,4 @@ func wrap(vm *goja.Runtime, sel *goquery.Selection) map[string]any {
 		return vals
 	}
 	return o
-}
-
-func removeIIFE(s string) string {
-	s = strings.TrimPrefix(s, "(() => {\n")
-	s = strings.TrimSuffix(s, "})();\n")
-	return s
 }

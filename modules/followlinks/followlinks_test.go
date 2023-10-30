@@ -20,24 +20,26 @@ func TestFollowLinks(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
-	scraper.LoadModule(&followlinks.Module{})
-
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/foo/bar"},
+		&followlinks.Module{},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="/baz">Baz</a>
 				<a href="baz">Baz</a>
 				<a href="http://www.google.com">Google</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 5)
@@ -52,28 +54,30 @@ func TestFollowSelector(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
-	scraper.LoadModule(&followlinks.Module{
-		Follow: []string{".next a[href]"},
-	})
-
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/foo/bar"},
+		&followlinks.Module{
+			Follow: []string{".next a[href]"},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="/baz">Baz</a>
 				<a href="baz">Baz</a>
                 <div class="next">
 				    <a href="http://www.google.com">Google</a>
                 </div>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 2)
@@ -85,26 +89,28 @@ func TestFollowDataAttr(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
-	scraper.LoadModule(&followlinks.Module{
-		Follow: []string{"[data-url]"},
-	})
-
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/foo/bar"},
+		&followlinks.Module{
+			Follow: []string{"[data-url]"},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="/baz">Baz</a>
 				<a href="baz">Baz</a>
 				<div data-url="http://www.google.com">Google</div>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 2)
@@ -116,26 +122,28 @@ func TestFollowMultiple(t *testing.T) {
 	var urls []string
 	var mu sync.Mutex
 
-	scraper := flyscrape.NewScraper()
-	scraper.LoadModule(&starturl.Module{URL: "http://www.example.com/foo/bar"})
-	scraper.LoadModule(&followlinks.Module{
-		Follow: []string{"a.prev", "a.next"},
-	})
-
-	scraper.LoadModule(hook.Module{
-		AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-			return flyscrape.MockTransport(200, `
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/foo/bar"},
+		&followlinks.Module{
+			Follow: []string{"a.prev", "a.next"},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
 				<a href="/baz">Baz</a>
 				<a class="prev" href="a">a</a>
 				<a class="next" href="b">b</a>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
 		},
-		ReceiveResponseFn: func(r *flyscrape.Response) {
-			mu.Lock()
-			urls = append(urls, r.Request.URL)
-			mu.Unlock()
-		},
-	})
+	}
 
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
 	scraper.Run()
 
 	require.Len(t, urls, 3)
