@@ -25,16 +25,17 @@ func Run(file string) error {
 
 	client := &http.Client{}
 
-	script, err := Compile(string(src), nil)
+	exports, err := Compile(string(src), NewJSLibrary(client))
 	if err != nil {
 		return fmt.Errorf("failed to compile script: %w", err)
 	}
 
 	scraper := NewScraper()
-	scraper.ScrapeFunc = script.Scrape
+	scraper.ScrapeFunc = exports.Scrape
+	scraper.LoginFunc = exports.Login
 	scraper.Script = file
 	scraper.Client = client
-	scraper.Modules = LoadModules(script.Config())
+	scraper.Modules = LoadModules(exports.Config())
 
 	scraper.Run()
 	return nil
@@ -53,18 +54,19 @@ func Dev(file string) error {
 	fn := func(s string) error {
 		client := &http.Client{}
 
-		script, err := Compile(s, nil)
+		exports, err := Compile(s, NewJSLibrary(client))
 		if err != nil {
 			printCompileErr(file, err)
 			return nil
 		}
 
-		cfg := script.Config()
+		cfg := exports.Config()
 		cfg = updateCfg(cfg, "depth", 0)
 		cfg = updateCfg(cfg, "cache", "file:"+cachefile)
 
 		scraper := NewScraper()
-		scraper.ScrapeFunc = script.Scrape
+		scraper.ScrapeFunc = exports.Scrape
+		scraper.LoginFunc = exports.Login
 		scraper.Script = file
 		scraper.Client = client
 		scraper.Modules = LoadModules(cfg)

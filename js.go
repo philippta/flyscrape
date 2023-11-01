@@ -55,6 +55,12 @@ func (e Exports) Scrape(p ScrapeParams) (any, error) {
 	return fn(p)
 }
 
+func (e Exports) Login() {
+	if fn, ok := e["login"].(func(goja.FunctionCall) goja.Value); ok {
+		fn(goja.FunctionCall{})
+	}
+}
+
 type Imports map[string]map[string]any
 
 func Compile(src string, imports Imports) (Exports, error) {
