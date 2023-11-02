@@ -53,7 +53,7 @@ func NewScraper() *Scraper {
 
 type Scraper struct {
 	ScrapeFunc ScrapeFunc
-	LoginFunc  func()
+	SetupFunc  func()
 	Script     string
 	Modules    []Module
 	Client     *http.Client
@@ -97,8 +97,8 @@ func (s *Scraper) Run() {
 		}
 	}
 
-	if s.LoginFunc != nil {
-		s.LoginFunc()
+	if s.SetupFunc != nil {
+		s.SetupFunc()
 	}
 
 	go s.scrape()

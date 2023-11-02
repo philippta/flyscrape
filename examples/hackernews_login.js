@@ -1,16 +1,15 @@
-import { submitForm } from "flyscrape"
+import { parse } from "flyscrape"
+import http from "flyscrape/http"
 
 export const config = {
     url: "https://news.ycombinator.com",
 }
 
-export function login() {
-    const formData = {
+export function setup() {
+    http.postForm("https://news.ycombinator.com/login", {
         "acct": "my-username",
         "pw": "my-password",
-    }
-
-    submitForm("https://news.ycombinator.com/login", formData)
+    })
 }
 
 export default function ({ doc }) {

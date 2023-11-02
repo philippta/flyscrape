@@ -39,5 +39,6 @@ func MockResponse(statusCode int, html string) (*http.Response, error) {
 		StatusCode: statusCode,
 		Status:     fmt.Sprintf("%d %s", statusCode, http.StatusText(statusCode)),
 		Body:       io.NopCloser(strings.NewReader(html)),
+		Header:     http.Header{"Content-Type": []string{"text/html"}},
 	}, nil
 }

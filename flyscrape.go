@@ -32,7 +32,7 @@ func Run(file string) error {
 
 	scraper := NewScraper()
 	scraper.ScrapeFunc = exports.Scrape
-	scraper.LoginFunc = exports.Login
+	scraper.SetupFunc = exports.Setup
 	scraper.Script = file
 	scraper.Client = client
 	scraper.Modules = LoadModules(exports.Config())
@@ -66,7 +66,7 @@ func Dev(file string) error {
 
 		scraper := NewScraper()
 		scraper.ScrapeFunc = exports.Scrape
-		scraper.LoginFunc = exports.Login
+		scraper.SetupFunc = exports.Setup
 		scraper.Script = file
 		scraper.Client = client
 		scraper.Modules = LoadModules(cfg)

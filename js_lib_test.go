@@ -5,24 +5,20 @@
 package flyscrape_test
 
 import (
-	"fmt"
-	"io"
+	"encoding/json"
 	"net/http"
-	"net/http/cookiejar"
-	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/philippta/flyscrape"
 	"github.com/stretchr/testify/require"
 )
 
-func TestJSLibFetchDocument(t *testing.T) {
+func TestJSLibParse(t *testing.T) {
 	script := `
-    import { fetchDocument } from "flyscrape"
+    import { parse } from "flyscrape"
 
-    const doc = fetchDocument("https://example.com")
-    export const headline = doc.find("h1").text()
+    const doc = parse('<div class=foo>Hello world</div>')
+    export const text = doc.find(".foo").text()
     `
 
 	client := &http.Client{
@@ -32,60 +28,140 @@ func TestJSLibFetchDocument(t *testing.T) {
 	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
 	require.NoError(t, err)
 
-	h, ok := exports["headline"].(string)
+	h, ok := exports["text"].(string)
 	require.True(t, ok)
-	require.Equal(t, "headline", h)
+	require.Equal(t, "Hello world", h)
 }
 
-func TestJSLibSubmitForm(t *testing.T) {
+func TestJSLibHTTPGet(t *testing.T) {
 	script := `
-    import { submitForm } from "flyscrape"
+    import http from "flyscrape/http"
 
-    const doc = submitForm("https://example.com", {
-        "username": "foo",
-        "password": "bar",
-    })
+    const res = http.get("https://example.com")
 
-    export const text = doc.find("div").text()
+    export const body = res.body;
+    export const status = res.status;
+    export const error = res.error;
+    export const headers = res.headers;
     `
 
-	var username, password string
-
-	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
-		Jar: jar,
+		Transport: flyscrape.MockTransport(200, html),
+	}
+
+	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
+	require.NoError(t, err)
+
+	body, ok := exports["body"].(string)
+	require.True(t, ok)
+	require.Equal(t, html, body)
+
+	status, ok := exports["status"].(int64)
+	require.True(t, ok)
+	require.Equal(t, int64(200), status)
+
+	error, ok := exports["error"].(string)
+	require.True(t, ok)
+	require.Equal(t, "", error)
+
+	headers, ok := exports["headers"].(map[string]any)
+	require.True(t, ok)
+	require.NotEmpty(t, headers)
+}
+
+func TestJSLibHTTPPostForm(t *testing.T) {
+	script := `
+    import http from "flyscrape/http"
+
+    const res = http.postForm("https://example.com", {
+        username: "foo",
+        password: "bar",
+        arr: [1,2,3],
+    })
+
+    export const body = res.body;
+    export const status = res.status;
+    export const error = res.error;
+    export const headers = res.headers;
+    `
+
+	client := &http.Client{
 		Transport: flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
-			username = r.FormValue("username")
-			password = r.FormValue("password")
+			require.Equal(t, "POST", r.Method)
+			require.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
+			require.Equal(t, "foo", r.FormValue("username"))
+			require.Equal(t, "bar", r.FormValue("password"))
+			require.Len(t, r.Form["arr"], 3)
 
-			resp := &http.Response{
-				StatusCode: 200,
-				Status:     fmt.Sprintf("%d %s", 200, http.StatusText(200)),
-				Body:       io.NopCloser(strings.NewReader(`<div>Login successful</div>`)),
-				Header:     http.Header{},
-			}
-
-			cookie := http.Cookie{
-				Name:   "example",
-				Value:  "Hello world!",
-				Path:   "/",
-				MaxAge: 3600,
-			}
-
-			resp.Header.Add("Set-Cookie", cookie.String())
-			return resp, nil
+			return flyscrape.MockResponse(400, "Bad Request")
 		}),
 	}
 
 	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
 	require.NoError(t, err)
 
-	text, ok := exports["text"].(string)
+	body, ok := exports["body"].(string)
 	require.True(t, ok)
-	require.Equal(t, "Login successful", text)
-	require.Equal(t, "foo", username)
-	require.Equal(t, "bar", password)
+	require.Equal(t, "Bad Request", body)
 
-	u, _ := url.Parse("https://example.com")
-	require.NotEmpty(t, jar.Cookies(u))
+	status, ok := exports["status"].(int64)
+	require.True(t, ok)
+	require.Equal(t, int64(400), status)
+
+	error, ok := exports["error"].(string)
+	require.True(t, ok)
+	require.Equal(t, "", error)
+
+	headers, ok := exports["headers"].(map[string]any)
+	require.True(t, ok)
+	require.NotEmpty(t, headers)
+}
+
+func TestJSLibHTTPPostJSON(t *testing.T) {
+	script := `
+    import http from "flyscrape/http"
+
+    const res = http.postJSON("https://example.com", {
+        username: "foo",
+        password: "bar",
+    })
+
+    export const body = res.body;
+    export const status = res.status;
+    export const error = res.error;
+    export const headers = res.headers;
+    `
+
+	client := &http.Client{
+		Transport: flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+			require.Equal(t, "POST", r.Method)
+			require.Equal(t, "application/json", r.Header.Get("Content-Type"))
+
+			m := map[string]any{}
+			json.NewDecoder(r.Body).Decode(&m)
+			require.Equal(t, "foo", m["username"])
+			require.Equal(t, "bar", m["password"])
+
+			return flyscrape.MockResponse(400, "Bad Request")
+		}),
+	}
+
+	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
+	require.NoError(t, err)
+
+	body, ok := exports["body"].(string)
+	require.True(t, ok)
+	require.Equal(t, "Bad Request", body)
+
+	status, ok := exports["status"].(int64)
+	require.True(t, ok)
+	require.Equal(t, int64(400), status)
+
+	error, ok := exports["error"].(string)
+	require.True(t, ok)
+	require.Equal(t, "", error)
+
+	headers, ok := exports["headers"].(map[string]any)
+	require.True(t, ok)
+	require.NotEmpty(t, headers)
 }

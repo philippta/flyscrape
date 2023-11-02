@@ -55,8 +55,8 @@ func (e Exports) Scrape(p ScrapeParams) (any, error) {
 	return fn(p)
 }
 
-func (e Exports) Login() {
-	if fn, ok := e["login"].(func(goja.FunctionCall) goja.Value); ok {
+func (e Exports) Setup() {
+	if fn, ok := e["setup"].(func(goja.FunctionCall) goja.Value); ok {
 		fn(goja.FunctionCall{})
 	}
 }
