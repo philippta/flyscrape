@@ -1,4 +1,3 @@
-import { parse } from "flyscrape"
 import http from "flyscrape/http"
 
 export const config = {
