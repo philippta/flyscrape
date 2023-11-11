@@ -130,6 +130,11 @@ export const config = {
     cache: "file",               // Enable file-based request caching.          (default = no cache)
 };
 
+export function setup() {
+    // Optional setup function, called once before scraping starts.
+    // Can be used for authentication.
+}
+
 export default function ({ doc, url, absoluteURL }) {
     // doc              - Contains the parsed HTML document
     // url              - Contains the scraped URL
@@ -168,6 +173,44 @@ items.get(1).siblings()                   // [<li class="a">Item 1</li>, <li>Ite
 items.map(item => item.text())            // ["Item 1", "Item 2", "Item 3"]
 items.filter(item => item.hasClass("a"))  // [<li class="a">Item 1</li>]
 ```
+
+## Flyscrape API
+
+```javascript
+import { parse } from "flyscrape";
+
+const doc = parse(`<div class="foo">bar</div>`);
+const text = doc.find(".foo").text();
+```
+
+```javascript
+import http from "flyscrape/http";
+
+const response = http.get("https://example.com")
+
+const response = http.postForm("https://example.com", {
+    "username": "foo",
+    "password": "bar",
+})
+
+const response = http.postJSON("https://example.com", {
+    "username": "foo",
+    "password": "bar",
+})
+
+// Contents of response
+{
+    body: "<html>...</html>",
+    status: 200,
+    headers: {
+        "Content-Type": "text/html",
+        // ...
+    },
+    error": "",
+}
+```
+
+
 
 ## Issues and Suggestions
 
