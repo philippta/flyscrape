@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+env:
+  GO_VERSION: '1.21.4'
+  PKG_NAME: 'github.com/philippta/flyscrape'
+  DOCKER_IMG: ghcr.io/goreleaser/goreleaser-cross
+
 jobs:
   release:
     name: Release
@@ -17,16 +22,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: git fetch --force --tags
+      - name: Fetch Git tags
+        run: git fetch --force --tags
 
-      - uses: actions/setup-go@v4
-        with:
-          go-version: "1.21.3"
-
-      - uses: goreleaser/goreleaser-action@v5
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and Release
+        run: |
+          docker run \
+            --rm \
+            --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $(pwd)/sysroot:/sysroot \
+            -v $(pwd):/go/src/${PKG_NAME} \
+            -w /go/src/${PKG_NAME} \
+            -e CGO_ENABLED=1 \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            ghcr.io/goreleaser/goreleaser-cross:v${GO_VERSION} \
+            --release --clean

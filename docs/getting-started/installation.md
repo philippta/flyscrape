@@ -30,7 +30,7 @@ Once you have Go installed, you can proceed with installing flyscrape. Follow th
 
    If the installation was successful, this command will display the help text of flyscrape.
 
-## Updating flyscrape abc
+## Updating flyscrape
 
 To keep your flyscrape installation up to date, you can use the following command:
 
