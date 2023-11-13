@@ -3,9 +3,9 @@
 <p align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-alt.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/logo.png">
-  <img width="200" src="docs/logo.png">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-alt.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/logo.png">
+  <img width="200" src=".github/assets/logo.png">
 </picture>
 
 </p>
@@ -19,7 +19,7 @@
 <br />
 
 <p align="center">
-<a href="#installation">Installation</a> · <a href="/docs">Documentation</a> · <a href="https://github.com/philippta/flyscrape/releases">Releases</a>
+<a href="#installation">Installation</a> · <a href="https://flyscrape.com/docs/">Documentation</a> · <a href="https://github.com/philippta/flyscrape/releases">Releases</a>
 </p>
 
 ## Features
