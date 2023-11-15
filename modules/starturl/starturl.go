@@ -13,7 +13,8 @@ func init() {
 }
 
 type Module struct {
-	URL string `json:"url"`
+	URL  string   `json:"url"`
+	URLs []string `json:"urls"`
 }
 
 func (Module) ModuleInfo() flyscrape.ModuleInfo {
@@ -24,14 +25,13 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 }
 
 func (m *Module) Provision(ctx flyscrape.Context) {
-	if m.disabled() {
-		return
+	if m.URL != "" {
+		ctx.Visit(m.URL)
 	}
-	ctx.Visit(m.URL)
-}
 
-func (m *Module) disabled() bool {
-	return m.URL == ""
+	for _, url := range m.URLs {
+		ctx.Visit(url)
+	}
 }
 
 var _ flyscrape.Provisioner = (*Module)(nil)

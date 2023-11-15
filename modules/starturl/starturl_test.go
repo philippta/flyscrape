@@ -38,3 +38,86 @@ func TestStartURL(t *testing.T) {
 	require.Equal(t, "http://www.example.com/foo/bar", url)
 	require.Equal(t, 0, depth)
 }
+
+func TestStartURL_MultipleStartingURLs(t *testing.T) {
+	testCases := []struct {
+		name          string
+		startURLModFn func() *starturl.Module
+		urls          []string
+	}{
+		{
+			name: ".URL and .URLs",
+			startURLModFn: func() *starturl.Module {
+				return &starturl.Module{
+					URL: "http://www.example.com/foo",
+					URLs: []string{
+						"http://www.example.com/bar",
+						"http://www.example.com/baz",
+					},
+				}
+			},
+			urls: []string{
+				"http://www.example.com/foo",
+				"http://www.example.com/bar",
+				"http://www.example.com/baz",
+			},
+		},
+		{
+			name: "only .URL",
+			startURLModFn: func() *starturl.Module {
+				return &starturl.Module{
+					URL: "http://www.example.com/foo",
+				}
+			},
+			urls: []string{
+				"http://www.example.com/foo",
+			},
+		},
+		{
+			name: "only .URLs",
+			startURLModFn: func() *starturl.Module {
+				return &starturl.Module{
+					URLs: []string{
+						"http://www.example.com/bar",
+						"http://www.example.com/baz",
+					},
+				}
+			},
+			urls: []string{
+				"http://www.example.com/bar",
+				"http://www.example.com/baz",
+			},
+		},
+		{
+			name: "empty",
+			startURLModFn: func() *starturl.Module {
+				return &starturl.Module{}
+			},
+			urls: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			urls := []string{}
+
+			mods := []flyscrape.Module{
+				tc.startURLModFn(),
+				hook.Module{
+					AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+						return flyscrape.MockTransport(http.StatusOK, "")
+					},
+					BuildRequestFn: func(r *flyscrape.Request) {
+						urls = append(urls, r.URL)
+					},
+				},
+			}
+
+			scraper := flyscrape.NewScraper()
+			scraper.Modules = mods
+			scraper.Run()
+
+			require.ElementsMatch(t, tc.urls, urls)
+		})
+	}
+}
