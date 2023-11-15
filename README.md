@@ -118,16 +118,20 @@ Below is an example scraping script that showcases the capabilities of flyscrape
 
 ```javascript
 export const config = {
-    url: "https://example.com/", // Specify the URL to start scraping from.
-    depth: 0,                    // Specify how deep links should be followed.  (default = 0, no follow)
-    follow: [],                  // Speficy the css selectors to follow         (default = ["a[href]"])
-    allowedDomains: [],          // Specify the allowed domains. ['*'] for all. (default = domain from url)
-    blockedDomains: [],          // Specify the blocked domains.                (default = none)
-    allowedURLs: [],             // Specify the allowed URLs as regex.          (default = all allowed)
-    blockedURLs: [],             // Specify the blocked URLs as regex.          (default = none)
-    rate: 100,                   // Specify the rate in requests per second.    (default = no rate limit)
-    proxies: [],                 // Specify the HTTP(S) proxy URLs.             (default = no proxy)
-    cache: "file",               // Enable file-based request caching.          (default = no cache)
+    url: "https://example.com/",    // Specify the URL to start scraping from.
+    urls: [                         // Specify the URL(S) to start scraping from. If both .url and .urls
+        "https://example.com/foo",  // are provided, all of the specified URLs will be scraped.
+        "https://example.com/foo",
+    ]
+    depth: 0,                       // Specify how deep links should be followed.  (default = 0, no follow)
+    follow: [],                     // Speficy the css selectors to follow         (default = ["a[href]"])
+    allowedDomains: [],             // Specify the allowed domains. ['*'] for all. (default = domain from url)
+    blockedDomains: [],             // Specify the blocked domains.                (default = none)
+    allowedURLs: [],                // Specify the allowed URLs as regex.          (default = all allowed)
+    blockedURLs: [],                // Specify the blocked URLs as regex.          (default = none)
+    rate: 100,                      // Specify the rate in requests per second.    (default = no rate limit)
+    proxies: [],                    // Specify the HTTP(S) proxy URLs.             (default = no proxy)
+    cache: "file",                  // Enable file-based request caching.          (default = no cache)
 };
 
 export function setup() {
