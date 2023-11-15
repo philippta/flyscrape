@@ -40,7 +40,7 @@ func (s *SQLiteStore) Get(key string) ([]byte, bool) {
 
 func (s *SQLiteStore) Set(key string, value []byte) {
 	if _, err := s.db.Exec(`INSERT INTO cache (key, value) VALUES (?, ?)`, key, value); err != nil {
-		log.Printf("cache: failed to insert cache key %q: %v\n", key, value)
+		log.Printf("cache: failed to insert cache key %q: %v\n", key, err)
 	}
 }
 

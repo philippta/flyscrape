@@ -126,6 +126,10 @@ func vm(src string, imports Imports) (Exports, error) {
 	}
 
 	exports := Exports{}
+	if goja.IsUndefined(v) {
+		return exports, nil
+	}
+
 	obj := v.ToObject(vm)
 	for _, key := range obj.Keys() {
 		exports[key] = obj.Get(key).Export()

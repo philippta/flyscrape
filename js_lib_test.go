@@ -7,6 +7,7 @@ package flyscrape_test
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/philippta/flyscrape"
@@ -25,7 +26,8 @@ func TestJSLibParse(t *testing.T) {
 		Transport: flyscrape.MockTransport(200, html),
 	}
 
-	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
+	imports, _ := flyscrape.NewJSLibrary(client)
+	exports, err := flyscrape.Compile(script, imports)
 	require.NoError(t, err)
 
 	h, ok := exports["text"].(string)
@@ -49,7 +51,8 @@ func TestJSLibHTTPGet(t *testing.T) {
 		Transport: flyscrape.MockTransport(200, html),
 	}
 
-	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
+	imports, _ := flyscrape.NewJSLibrary(client)
+	exports, err := flyscrape.Compile(script, imports)
 	require.NoError(t, err)
 
 	body, ok := exports["body"].(string)
@@ -97,7 +100,8 @@ func TestJSLibHTTPPostForm(t *testing.T) {
 		}),
 	}
 
-	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
+	imports, _ := flyscrape.NewJSLibrary(client)
+	exports, err := flyscrape.Compile(script, imports)
 	require.NoError(t, err)
 
 	body, ok := exports["body"].(string)
@@ -146,7 +150,8 @@ func TestJSLibHTTPPostJSON(t *testing.T) {
 		}),
 	}
 
-	exports, err := flyscrape.Compile(script, flyscrape.NewJSLibrary(client))
+	imports, _ := flyscrape.NewJSLibrary(client)
+	exports, err := flyscrape.Compile(script, imports)
 	require.NoError(t, err)
 
 	body, ok := exports["body"].(string)
@@ -164,4 +169,68 @@ func TestJSLibHTTPPostJSON(t *testing.T) {
 	headers, ok := exports["headers"].(map[string]any)
 	require.True(t, ok)
 	require.NotEmpty(t, headers)
+}
+
+func TestJSLibHTTPDownload(t *testing.T) {
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	tmpdir, err := os.MkdirTemp("", "http-download")
+	require.NoError(t, err)
+
+	defer os.RemoveAll(tmpdir)
+	defer os.Chdir(cwd)
+	os.Chdir(tmpdir)
+
+	script := `
+    import http from "flyscrape/http";
+
+    http.download("https://example.com/foo.txt", "foo.txt");
+    http.download("https://example.com/foo.txt", "dir/my-foo.txt");
+    http.download("https://example.com/bar.txt", "dir/");
+    http.download("https://example.com/baz.txt", "dir");
+    http.download("https://example.com/content-disposition", ".");
+    http.download("https://example.com/hack.txt", ".");
+    http.download("https://example.com/no-dest.txt");
+    http.download("https://example.com/404.txt");
+    `
+
+	nreqs := 0
+	client := &http.Client{
+		Transport: flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+			nreqs++
+
+			if r.URL.Path == "/content-disposition" {
+				resp, err := flyscrape.MockResponse(200, "hello world")
+				resp.Header.Set("Content-Disposition", `attachment; filename="qux.txt"`)
+				return resp, err
+			}
+			if r.URL.Path == "/hack.txt" {
+				resp, err := flyscrape.MockResponse(200, "hello world")
+				resp.Header.Set("Content-Disposition", `attachment; filename="../../hack.txt"`)
+				return resp, err
+			}
+			if r.URL.Path == "/404.txt" {
+				resp, err := flyscrape.MockResponse(404, "hello world")
+				return resp, err
+			}
+
+			return flyscrape.MockResponse(200, "hello world")
+		}),
+	}
+
+	imports, wait := flyscrape.NewJSLibrary(client)
+	_, err = flyscrape.Compile(script, imports)
+	require.NoError(t, err)
+
+	wait()
+
+	require.Equal(t, nreqs, 8)
+	require.FileExists(t, "foo.txt")
+	require.FileExists(t, "dir/my-foo.txt")
+	require.FileExists(t, "dir/bar.txt")
+	require.FileExists(t, "qux.txt")
+	require.FileExists(t, "hack.txt")
+	require.FileExists(t, "no-dest.txt")
+	require.NoFileExists(t, "404.txt")
 }

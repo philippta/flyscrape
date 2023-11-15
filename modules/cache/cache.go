@@ -51,8 +51,11 @@ func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 		return t
 	}
 	return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
-		key := r.Method + " " + r.URL.String()
+		if nocache(r) {
+			return t.RoundTrip(r)
+		}
 
+		key := r.Method + " " + r.URL.String()
 		if b, ok := m.store.Get(key); ok {
 			if resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(b)), r); err == nil {
 				return resp, nil
@@ -84,6 +87,14 @@ func (m *Module) Finalize() {
 	if v, ok := m.store.(interface{ Close() }); ok {
 		v.Close()
 	}
+}
+
+func nocache(r *http.Request) bool {
+	if r.Header.Get(flyscrape.HeaderBypassCache) != "" {
+		r.Header.Del(flyscrape.HeaderBypassCache)
+		return true
+	}
+	return false
 }
 
 func replaceExt(filePath string, newExt string) string {
