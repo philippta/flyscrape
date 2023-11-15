@@ -25,7 +25,10 @@ func Run(file string) error {
 
 	client := &http.Client{}
 
-	exports, err := Compile(string(src), NewJSLibrary(client))
+	imports, wait := NewJSLibrary(client)
+	defer wait()
+
+	exports, err := Compile(string(src), imports)
 	if err != nil {
 		return fmt.Errorf("failed to compile script: %w", err)
 	}
@@ -54,7 +57,10 @@ func Dev(file string) error {
 	fn := func(s string) error {
 		client := &http.Client{}
 
-		exports, err := Compile(s, NewJSLibrary(client))
+		imports, wait := NewJSLibrary(client)
+		defer wait()
+
+		exports, err := Compile(s, imports)
 		if err != nil {
 			printCompileErr(file, err)
 			return nil

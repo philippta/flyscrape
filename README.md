@@ -119,10 +119,10 @@ Below is an example scraping script that showcases the capabilities of flyscrape
 ```javascript
 export const config = {
     url: "https://example.com/",    // Specify the URL to start scraping from.
-    urls: [                         // Specify the URL(S) to start scraping from. If both .url and .urls
+    urls: [                         // Specify the URL(s) to start scraping from. If both `url` and `urls`
         "https://example.com/foo",  // are provided, all of the specified URLs will be scraped.
-        "https://example.com/foo",
-    ]
+        "https://example.com/bar",
+    ],
     depth: 0,                       // Specify how deep links should be followed.  (default = 0, no follow)
     follow: [],                     // Speficy the css selectors to follow         (default = ["a[href]"])
     allowedDomains: [],             // Specify the allowed domains. ['*'] for all. (default = domain from url)
@@ -180,12 +180,16 @@ items.filter(item => item.hasClass("a"))  // [<li class="a">Item 1</li>]
 
 ## Flyscrape API
 
+### Document Parsing
+
 ```javascript
 import { parse } from "flyscrape";
 
 const doc = parse(`<div class="foo">bar</div>`);
 const text = doc.find(".foo").text();
 ```
+
+### Basic HTTP Requests
 
 ```javascript
 import http from "flyscrape/http";
@@ -214,7 +218,20 @@ const response = http.postJSON("https://example.com", {
 }
 ```
 
+### File Downloads
 
+```javascript
+import { download } from "flyscrape/http";
+
+download("http://example.com/image.jpg")              // downloads as "image.jpg"
+download("http://example.com/image.jpg", "other.jpg") // downloads as "other.jpg"
+download("http://example.com/image.jpg", "dir/")      // downloads as "dir/image.jpg"
+
+// If the server offers a filename via the Content-Disposition header and no
+// destination filename is provided, Flyscrape will honor the suggested filename.
+// E.g. `Content-Disposition: attachment; filename="archive.zip"`
+download("http://example.com/generate_archive.php", "dir/") // downloads as "dir/archive.zip"
+```
 
 ## Issues and Suggestions
 

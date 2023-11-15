@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+const HeaderBypassCache = "X-Flyscrape-Bypass-Cache"
+
 func Prettify(v any, prefix string) string {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
