@@ -89,6 +89,9 @@ func parseArg(arg string) any {
 	if num, err := strconv.Atoi(arg); err == nil {
 		return num
 	}
+	if num, err := strconv.ParseFloat(arg, 64); err == nil {
+		return num
+	}
 	return arg
 }
 
