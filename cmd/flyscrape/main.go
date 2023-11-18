@@ -7,11 +7,10 @@ package main
 import (
 	_ "embed"
 	"flag"
-	"fmt"
 	"log"
 	"os"
-	"strings"
 
+	"github.com/philippta/flyscrape/cmd"
 	_ "github.com/philippta/flyscrape/modules/cache"
 	_ "github.com/philippta/flyscrape/modules/depth"
 	_ "github.com/philippta/flyscrape/modules/domainfilter"
@@ -26,51 +25,10 @@ import (
 func main() {
 	log.SetFlags(0)
 
-	m := &Main{}
-	if err := m.Run(os.Args[1:]); err == flag.ErrHelp {
-		os.Exit(1)
-	} else if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-}
-
-type Main struct{}
-
-func (m *Main) Run(args []string) error {
-	var cmd string
-	if len(args) > 0 {
-		cmd, args = args[0], args[1:]
-	}
-
-	switch cmd {
-	case "new":
-		return (&NewCommand{}).Run(args)
-	case "run":
-		return (&RunCommand{}).Run(args)
-	case "dev":
-		return (&DevCommand{}).Run(args)
-	default:
-		if cmd == "" || cmd == "help" || strings.HasPrefix(cmd, "-") {
-			m.Usage()
-			return flag.ErrHelp
+	if err := (&cmd.Main{}).Run(os.Args[1:]); err != nil {
+		if err != flag.ErrHelp {
+			log.Println(err)
 		}
-		return fmt.Errorf("flyscrape %s: unknown command", cmd)
+		os.Exit(1)
 	}
-}
-
-func (m *Main) Usage() {
-	fmt.Println(`
-flyscrape is a standalone and scriptable web scraper for efficiently extracting data from websites.
-
-Usage:
-
-    flyscrape <command> [arguments]
-
-Commands:
-
-    new    creates a sample scraping script
-    run    runs a scraping script
-    dev    watches and re-runs a scraping script
-`[1:])
 }

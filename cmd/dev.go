@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package main
+package cmd
 
 import (
 	"flag"
@@ -22,11 +22,14 @@ func (c *DevCommand) Run(args []string) error {
 	} else if fs.NArg() == 0 || fs.Arg(0) == "" {
 		c.Usage()
 		return flag.ErrHelp
-	} else if fs.NArg() > 1 {
-		return fmt.Errorf("too many arguments")
 	}
 
-	return flyscrape.Dev(fs.Arg(0))
+	cfg, err := parseConfigArgs(fs.Args()[1:])
+	if err != nil {
+		return fmt.Errorf("Error parsing config flags: %w", err)
+	}
+
+	return flyscrape.Dev(fs.Arg(0), cfg)
 }
 
 func (c *DevCommand) Usage() {
@@ -36,11 +39,17 @@ Recursive scraping is disabled in this mode, only the initial URL will be scrape
 
 Usage:
 
-    flyscrape dev SCRIPT
+    flyscrape dev SCRIPT [config flags]
 
 Examples:
 
     # Run and watch script.
     $ flyscrape dev example.js
+
+    # Set the URL as argument.
+    $ flyscrape dev example.js --url "http://other.com"
+
+    # Enable proxy support.
+    $ flyscrape dev example.js --proxies "http://someproxy:8043"
 `[1:])
 }

@@ -37,6 +37,16 @@
 ```javascript
 export const config = {
     url: "https://news.ycombinator.com/",
+    // urls: []               // Specify additional URLs to start from.      (default = none)
+    // depth: 0,              // Specify how deep links should be followed.  (default = 0, no follow)
+    // follow: [],            // Speficy the css selectors to follow         (default = ["a[href]"])
+    // allowedDomains: [],    // Specify the allowed domains. ['*'] for all. (default = domain from url)
+    // blockedDomains: [],    // Specify the blocked domains.                (default = none)
+    // allowedURLs: [],       // Specify the allowed URLs as regex.          (default = all allowed)
+    // blockedURLs: [],       // Specify the blocked URLs as regex.          (default = none)
+    // rate: 100,             // Specify the rate in requests per second.    (default = no rate limit)
+    // proxies: [],           // Specify the HTTP(S) proxy URLs.             (default = no proxy)
+    // cache: "file",         // Enable file-based request caching.          (default = no cache)
 }
 
 export default function ({ doc, absoluteURL }) {
@@ -99,17 +109,23 @@ To compile flyscrape from source, follow these steps:
 ## Usage
 
 ```
-flyscrape is a standalone and scriptable web scraper for efficiently extracting data from websites.
-
 Usage:
 
-    flyscrape <command> [arguments]
+    flyscrape run SCRIPT [config flags]
 
-Commands:
+Examples:
 
-    new    creates a sample scraping script
-    run    runs a scraping script
-    dev    watches and re-runs a scraping script
+    # Run the script.
+    $ flyscrape run example.js
+
+    # Set the URL as argument.
+    $ flyscrape run example.js --url "http://other.com"
+
+    # Enable proxy support.
+    $ flyscrape run example.js --proxies "http://someproxy:8043"
+
+    # Follow paginated links.
+    $ flyscrape run example.js --depth 5 --follow ".next-button > a"
 ```
 
 ## Configuration
