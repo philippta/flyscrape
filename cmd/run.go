@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package main
+package cmd
 
 import (
 	"flag"
@@ -22,11 +22,14 @@ func (c *RunCommand) Run(args []string) error {
 	} else if fs.NArg() == 0 || fs.Arg(0) == "" {
 		c.Usage()
 		return flag.ErrHelp
-	} else if fs.NArg() > 1 {
-		return fmt.Errorf("too many arguments")
 	}
 
-	return flyscrape.Run(fs.Arg(0))
+	cfg, err := parseConfigArgs(fs.Args()[1:])
+	if err != nil {
+		return fmt.Errorf("Error parsing config flags: %w", err)
+	}
+
+	return flyscrape.Run(fs.Arg(0), cfg)
 }
 
 func (c *RunCommand) Usage() {
@@ -35,11 +38,20 @@ The run command runs the scraping script.
 
 Usage:
 
-    flyscrape run SCRIPT
+    flyscrape run SCRIPT [config flags]
 
 Examples:
 
     # Run the script.
     $ flyscrape run example.js
+
+    # Set the URL as argument.
+    $ flyscrape run example.js --url "http://other.com"
+
+    # Enable proxy support.
+    $ flyscrape run example.js --proxies "http://someproxy:8043"
+
+    # Follow paginated links.
+    $ flyscrape run example.js --depth 5 --follow ".next-button > a"
 `[1:])
 }

@@ -5,7 +5,6 @@
 package flyscrape
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,9 +14,10 @@ import (
 	"syscall"
 
 	"github.com/inancgumus/screen"
+	"github.com/tidwall/sjson"
 )
 
-func Run(file string) error {
+func Run(file string, overrides map[string]any) error {
 	src, err := os.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("failed to read script %q: %w", file, err)
@@ -33,18 +33,21 @@ func Run(file string) error {
 		return fmt.Errorf("failed to compile script: %w", err)
 	}
 
+	cfg := exports.Config()
+	cfg = updateCfgMultiple(cfg, overrides)
+
 	scraper := NewScraper()
 	scraper.ScrapeFunc = exports.Scrape
 	scraper.SetupFunc = exports.Setup
 	scraper.Script = file
 	scraper.Client = client
-	scraper.Modules = LoadModules(exports.Config())
+	scraper.Modules = LoadModules(cfg)
 
 	scraper.Run()
 	return nil
 }
 
-func Dev(file string) error {
+func Dev(file string, overrides map[string]any) error {
 	cachefile, err := newCacheFile()
 	if err != nil {
 		return fmt.Errorf("failed to create cache file: %w", err)
@@ -67,6 +70,7 @@ func Dev(file string) error {
 		}
 
 		cfg := exports.Config()
+		cfg = updateCfgMultiple(cfg, overrides)
 		cfg = updateCfg(cfg, "depth", 0)
 		cfg = updateCfg(cfg, "cache", "file:"+cachefile)
 
@@ -104,19 +108,11 @@ func printCompileErr(script string, err error) {
 }
 
 func updateCfg(cfg Config, key string, value any) Config {
-	var m map[string]any
-	if err := json.Unmarshal(cfg, &m); err != nil {
-		return cfg
-	}
-
-	m[key] = value
-
-	b, err := json.Marshal(m)
+	newcfg, err := sjson.Set(string(cfg), key, value)
 	if err != nil {
 		return cfg
 	}
-
-	return b
+	return Config(newcfg)
 }
 
 func newCacheFile() (string, error) {
@@ -136,4 +132,18 @@ func trapsignal(f func()) {
 		f()
 		os.Exit(0)
 	}()
+}
+
+func updateCfgMultiple(cfg Config, updates map[string]any) Config {
+	c := string(cfg)
+
+	for k, v := range updates {
+		nc, err := sjson.Set(c, k, v)
+		if err != nil {
+			continue
+		}
+		c = nc
+	}
+
+	return []byte(c)
 }

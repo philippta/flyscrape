@@ -58,14 +58,14 @@ func Watch(path string, fn func(string) error) error {
 				if errors.Is(err, StopWatch) {
 					return nil
 				}
-				return err
+				return nil
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return nil
 			}
 			if err != nil {
-				return err
+				return fmt.Errorf("watcher: %w", err)
 			}
 		}
 	}
