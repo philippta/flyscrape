@@ -97,5 +97,6 @@ var (
 		"proxy",
 		"ratelimit",
 		"cache",
+		"headers",
 	}
 )
