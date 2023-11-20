@@ -20,6 +20,8 @@ func TestJSLibParse(t *testing.T) {
 
     const doc = parse('<div class=foo>Hello world</div>')
     export const text = doc.find(".foo").text()
+
+    export default function () {}
     `
 
 	client := &http.Client{
@@ -45,6 +47,8 @@ func TestJSLibHTTPGet(t *testing.T) {
     export const status = res.status;
     export const error = res.error;
     export const headers = res.headers;
+
+    export default function () {}
     `
 
 	client := &http.Client{
@@ -86,6 +90,8 @@ func TestJSLibHTTPPostForm(t *testing.T) {
     export const status = res.status;
     export const error = res.error;
     export const headers = res.headers;
+
+    export default function () {}
     `
 
 	client := &http.Client{
@@ -134,6 +140,8 @@ func TestJSLibHTTPPostJSON(t *testing.T) {
     export const status = res.status;
     export const error = res.error;
     export const headers = res.headers;
+
+    export default function () {}
     `
 
 	client := &http.Client{
