@@ -41,8 +41,10 @@ func (m *Module) ReceiveResponse(resp *flyscrape.Response) {
 	o := output{
 		URL:       resp.Request.URL,
 		Data:      resp.Data,
-		Error:     resp.Error,
 		Timestamp: time.Now(),
+	}
+	if resp.Error != nil {
+		o.Error = resp.Error.Error()
 	}
 
 	fmt.Print(flyscrape.Prettify(o, "  "))
@@ -57,7 +59,7 @@ func (m *Module) Finalize() {
 type output struct {
 	URL       string    `json:"url,omitempty"`
 	Data      any       `json:"data,omitempty"`
-	Error     error     `json:"error,omitempty"`
+	Error     string    `json:"error,omitempty"`
 	Timestamp time.Time `json:"timestamp,omitempty"`
 }
 

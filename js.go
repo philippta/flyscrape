@@ -135,22 +135,29 @@ func vm(src string, imports Imports) (Exports, error) {
 		exports[key] = obj.Get(key).Export()
 	}
 
-	exports["__scrape"] = scrape(vm)
+	exports["__scrape"], err = scrape(vm)
+	if err != nil {
+		return nil, err
+	}
 
 	return exports, nil
 }
 
-func scrape(vm *goja.Runtime) ScrapeFunc {
+func scrape(vm *goja.Runtime) (ScrapeFunc, error) {
 	var lock sync.Mutex
 
-	defaultfn, err := vm.RunString("module.exports.default")
+	if v, err := vm.RunString("module.exports.default"); err != nil || goja.IsUndefined(v) {
+		return nil, errors.New("default export is not defined")
+	}
+
+	defaultfn, err := vm.RunString("(o) => JSON.stringify(module.exports.default(o))")
 	if err != nil {
-		return func(ScrapeParams) (any, error) { return nil, errors.New("no scrape function defined") }
+		return nil, fmt.Errorf("failed to create scrape function: %w", err)
 	}
 
 	scrapefn, ok := defaultfn.Export().(func(goja.FunctionCall) goja.Value)
 	if !ok {
-		return func(ScrapeParams) (any, error) { return nil, errors.New("default export is not a function") }
+		return nil, errors.New("failed to export scrape funtion")
 	}
 
 	return func(p ScrapeParams) (any, error) {
@@ -183,9 +190,19 @@ func scrape(vm *goja.Runtime) ScrapeFunc {
 		o.Set("doc", doc)
 		o.Set("absoluteURL", absoluteURL)
 
-		ret := scrapefn(goja.FunctionCall{Arguments: []goja.Value{o}}).Export()
-		return ret, nil
-	}
+		ret := scrapefn(goja.FunctionCall{Arguments: []goja.Value{o}})
+		if goja.IsUndefined(ret) {
+			return nil, nil
+		}
+
+		var result any
+		if err := json.Unmarshal([]byte(ret.String()), &result); err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		return result, nil
+	}, nil
 }
 
 func DocumentFromString(s string) (map[string]any, error) {

@@ -94,6 +94,21 @@ func TestJSScrapeNull(t *testing.T) {
 	require.Nil(t, result)
 }
 
+func TestJSScrapeUndefined(t *testing.T) {
+	js := `
+    export default function() { }
+    `
+	exports, err := flyscrape.Compile(js, nil)
+	require.NoError(t, err)
+
+	result, err := exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+	})
+	require.NoError(t, err)
+	require.Nil(t, result)
+}
+
 func TestJSScrapeString(t *testing.T) {
 	js := `
     export default function() {
@@ -131,9 +146,26 @@ func TestJSScrapeArray(t *testing.T) {
 
 	m, ok := result.([]any)
 	require.True(t, ok)
-	require.Equal(t, int64(1), m[0])
-	require.Equal(t, int64(2), m[1])
-	require.Equal(t, int64(3), m[2])
+	require.Equal(t, float64(1), m[0])
+	require.Equal(t, float64(2), m[1])
+	require.Equal(t, float64(3), m[2])
+}
+
+func TestJSScrapeNaN(t *testing.T) {
+	js := `
+    export default function() {
+        return NaN
+    }
+    `
+	exports, err := flyscrape.Compile(js, nil)
+	require.NoError(t, err)
+
+	result, err := exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+	})
+	require.NoError(t, err)
+	require.Nil(t, result)
 }
 
 func TestJSCompileError(t *testing.T) {
