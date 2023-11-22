@@ -33,18 +33,32 @@ func TestHeaders(t *testing.T) {
 			wantHeaders: map[string][]string{"User-Agent": {"flyscrape/0.1"}},
 		},
 		{
-			name: "non-empty custom headers",
+			name: "no duplicate headers between default and custom",
 			headersFn: func() headers.Module {
 				return headers.Module{
 					Headers: map[string]string{
-						"Basic":      "ZGVtbzpwQDU1dzByZA==",
-						"User-Agent": "Gecko/1.0",
+						"Authorization": "Basic ZGVtbzpwQDU1dzByZA==",
 					},
 				}
 			},
 			wantHeaders: map[string][]string{
-				"Basic":      {"ZGVtbzpwQDU1dzByZA=="},
-				"User-Agent": {"Gecko/1.0"},
+				"Authorization": {"Basic ZGVtbzpwQDU1dzByZA=="},
+				"User-Agent":    {"flyscrape/0.1"},
+			},
+		},
+		{
+			name: "duplicate headers between default and custom",
+			headersFn: func() headers.Module {
+				return headers.Module{
+					Headers: map[string]string{
+						"Authorization": "Basic ZGVtbzpwQDU1dzByZA==",
+						"User-Agent":    "Gecko/1.0",
+					},
+				}
+			},
+			wantHeaders: map[string][]string{
+				"Authorization": {"Basic ZGVtbzpwQDU1dzByZA=="},
+				"User-Agent":    {"Gecko/1.0"},
 			},
 		},
 	}
@@ -73,7 +87,7 @@ func TestHeaders(t *testing.T) {
 			require.Truef(
 				t,
 				reflect.DeepEqual(tc.wantHeaders, headers),
-				fmt.Sprintf("%v does not equal to %v", tc.wantHeaders, headers),
+				fmt.Sprintf("expected: %v; actual: %v", tc.wantHeaders, headers),
 			)
 		})
 	}

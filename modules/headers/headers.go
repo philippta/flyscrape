@@ -31,12 +31,9 @@ func (m Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 	}
 
 	return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
-		h := http.Header{}
 		for k, v := range m.Headers {
-			h.Set(k, v)
+			r.Header.Set(k, v)
 		}
-
-		r.Header = h
 
 		return t.RoundTrip(r)
 	})
