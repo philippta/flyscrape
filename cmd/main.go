@@ -16,6 +16,7 @@ import (
 	_ "github.com/philippta/flyscrape/modules/depth"
 	_ "github.com/philippta/flyscrape/modules/domainfilter"
 	_ "github.com/philippta/flyscrape/modules/followlinks"
+	_ "github.com/philippta/flyscrape/modules/headers"
 	_ "github.com/philippta/flyscrape/modules/jsonprint"
 	_ "github.com/philippta/flyscrape/modules/proxy"
 	_ "github.com/philippta/flyscrape/modules/ratelimit"
