@@ -237,6 +237,7 @@ func TestJSLibHTTPDownload(t *testing.T) {
 	require.FileExists(t, "foo.txt")
 	require.FileExists(t, "dir/my-foo.txt")
 	require.FileExists(t, "dir/bar.txt")
+	require.FileExists(t, "dir/baz.txt")
 	require.FileExists(t, "qux.txt")
 	require.FileExists(t, "hack.txt")
 	require.FileExists(t, "no-dest.txt")
