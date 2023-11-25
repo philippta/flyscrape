@@ -5,8 +5,6 @@
 package flyscrape
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,15 +12,6 @@ import (
 )
 
 const HeaderBypassCache = "X-Flyscrape-Bypass-Cache"
-
-func Prettify(v any, prefix string) string {
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	enc.SetEscapeHTML(false)
-	enc.SetIndent(prefix, "  ")
-	enc.Encode(v)
-	return prefix + strings.TrimSuffix(buf.String(), "\n")
-}
 
 type RoundTripFunc func(*http.Request) (*http.Response, error)
 

@@ -53,5 +53,11 @@ Examples:
 
     # Follow paginated links.
     $ flyscrape run example.js --depth 5 --follow ".next-button > a"
+
+    # Set the output format to ndjson.
+    $ flyscrape run example.js --output.format ndjson
+
+    # Write the output to a file.
+    $ flyscrape run example.js --output.file results.json
 `[1:])
 }
