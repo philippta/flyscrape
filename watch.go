@@ -14,7 +14,7 @@ import (
 
 var StopWatch = errors.New("stop watch")
 
-func Watch(path string, fn func(string) error) error {
+func Watch(path string, fn func(string, string) error) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("creating file watcher: %w", err)
@@ -30,7 +30,7 @@ func Watch(path string, fn func(string) error) error {
 		if err != nil {
 			return err
 		}
-		return fn(string(data))
+		return fn(string(data), path)
 	}
 
 	if err := update(); err != nil {

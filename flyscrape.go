@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/evanw/esbuild/pkg/api"
 	"github.com/inancgumus/screen"
 	"github.com/tidwall/sjson"
 )
@@ -28,7 +29,9 @@ func Run(file string, overrides map[string]any) error {
 	imports, wait := NewJSLibrary(client)
 	defer wait()
 
-	exports, err := Compile(string(src), imports)
+	options := BuildOptions(file)
+
+	exports, err := Compile(string(src), imports, options)
 	if err != nil {
 		return fmt.Errorf("failed to compile script: %w", err)
 	}
@@ -57,13 +60,15 @@ func Dev(file string, overrides map[string]any) error {
 		os.RemoveAll(cachefile)
 	})
 
-	fn := func(s string) error {
+	fn := func(s string, file string) error {
 		client := &http.Client{}
 
 		imports, wait := NewJSLibrary(client)
 		defer wait()
 
-		exports, err := Compile(s, imports)
+		options := BuildOptions(file)
+
+		exports, err := Compile(s, imports, options)
 		if err != nil {
 			printCompileErr(file, err)
 			return nil
@@ -146,4 +151,21 @@ func updateCfgMultiple(cfg Config, updates map[string]any) Config {
 	}
 
 	return []byte(c)
+}
+
+func BuildOptions(fileName string) api.TransformOptions {
+	options := api.TransformOptions{
+		Platform: api.PlatformNode,
+		Format:   api.FormatCommonJS,
+		Loader:   api.LoaderJS,
+	}
+
+	if len(fileName) < 3 {
+		return options
+	}
+
+	if fileName[len(fileName)-3:] == ".ts" {
+		options.Loader = api.LoaderTS
+	}
+	return options
 }

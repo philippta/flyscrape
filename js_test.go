@@ -38,7 +38,8 @@ export default function({ doc, url }) {
 `
 
 func TestJSScrape(t *testing.T) {
-	exports, err := flyscrape.Compile(script, nil)
+	options := flyscrape.BuildOptions("")
+	exports, err := flyscrape.Compile(script, nil, options)
 	require.NoError(t, err)
 	require.NotNil(t, exports)
 	require.NotEmpty(t, exports.Config)
@@ -58,12 +59,13 @@ func TestJSScrape(t *testing.T) {
 }
 
 func TestJSScrapeObject(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export default function() {
         return {foo: "bar"}
     }
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 
 	result, err := exports.Scrape(flyscrape.ScrapeParams{
@@ -78,12 +80,13 @@ func TestJSScrapeObject(t *testing.T) {
 }
 
 func TestJSScrapeNull(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export default function() {
         return null
     }
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 
 	result, err := exports.Scrape(flyscrape.ScrapeParams{
@@ -95,10 +98,11 @@ func TestJSScrapeNull(t *testing.T) {
 }
 
 func TestJSScrapeUndefined(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export default function() { }
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 
 	result, err := exports.Scrape(flyscrape.ScrapeParams{
@@ -110,12 +114,13 @@ func TestJSScrapeUndefined(t *testing.T) {
 }
 
 func TestJSScrapeString(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export default function() {
         return "foo"
     }
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 
 	result, err := exports.Scrape(flyscrape.ScrapeParams{
@@ -130,12 +135,13 @@ func TestJSScrapeString(t *testing.T) {
 }
 
 func TestJSScrapeArray(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export default function() {
         return [1,2,3]
     }
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 
 	result, err := exports.Scrape(flyscrape.ScrapeParams{
@@ -152,12 +158,13 @@ func TestJSScrapeArray(t *testing.T) {
 }
 
 func TestJSScrapeNaN(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export default function() {
         return NaN
     }
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 
 	result, err := exports.Scrape(flyscrape.ScrapeParams{
@@ -169,7 +176,8 @@ func TestJSScrapeNaN(t *testing.T) {
 }
 
 func TestJSCompileError(t *testing.T) {
-	exports, err := flyscrape.Compile("import foo;", nil)
+	options := flyscrape.BuildOptions("")
+	exports, err := flyscrape.Compile("import foo;", nil, options)
 	require.Error(t, err)
 	require.Nil(t, exports)
 
@@ -184,6 +192,7 @@ func TestJSCompileError(t *testing.T) {
 }
 
 func TestJSConfig(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export const config = {
         url: 'http://localhost/',
@@ -192,7 +201,7 @@ func TestJSConfig(t *testing.T) {
     }
     export default function() {}
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 	require.NotNil(t, exports)
 	require.NotEmpty(t, exports.Config())
@@ -215,6 +224,7 @@ func TestJSConfig(t *testing.T) {
 }
 
 func TestJSImports(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     import A from "pkg-a"
     import { bar } from "pkg-a/pkg-b"
@@ -236,7 +246,7 @@ func TestJSImports(t *testing.T) {
 		},
 	}
 
-	exports, err := flyscrape.Compile(js, imports)
+	exports, err := flyscrape.Compile(js, imports, options)
 	require.NoError(t, err)
 	require.NotNil(t, exports)
 
@@ -245,6 +255,7 @@ func TestJSImports(t *testing.T) {
 }
 
 func TestJSArbitraryFunction(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export const config = {}
     export default function() {}
@@ -252,7 +263,7 @@ func TestJSArbitraryFunction(t *testing.T) {
         return "bar";
     }
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 	require.NotNil(t, exports)
 
@@ -265,14 +276,49 @@ func TestJSArbitraryFunction(t *testing.T) {
 }
 
 func TestJSArbitraryConstString(t *testing.T) {
+	options := flyscrape.BuildOptions("")
 	js := `
     export const config = {}
     export default function() {}
     export const foo = "bar"
     `
-	exports, err := flyscrape.Compile(js, nil)
+	exports, err := flyscrape.Compile(js, nil, options)
 	require.NoError(t, err)
 	require.NotNil(t, exports)
 
 	require.Equal(t, "bar", exports["foo"].(string))
+}
+
+func TestTSScrape(t *testing.T) {
+	var tsScript = `
+export const config: Record<any,any> = {
+    url: "https://localhost/",
+}
+
+export default function({ doc, url }: { doc: any, url: string }) {
+    return {
+        headline: doc.find("h1").text(),
+        body: doc.find("p").text(),
+        url: url,
+    }
+}
+`
+	options := flyscrape.BuildOptions("test.ts")
+	exports, err := flyscrape.Compile(tsScript, nil, options)
+	require.NoError(t, err)
+	require.NotNil(t, exports)
+	require.NotEmpty(t, exports.Config)
+
+	result, err := exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+	})
+
+	require.NoError(t, err)
+
+	m, ok := result.(map[string]any)
+	require.True(t, ok)
+	require.Equal(t, "headline", m["headline"])
+	require.Equal(t, "paragraph", m["body"])
+	require.Equal(t, "http://localhost/", m["url"])
 }

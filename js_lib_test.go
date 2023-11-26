@@ -28,8 +28,10 @@ func TestJSLibParse(t *testing.T) {
 		Transport: flyscrape.MockTransport(200, html),
 	}
 
+	options := flyscrape.BuildOptions("")
+
 	imports, _ := flyscrape.NewJSLibrary(client)
-	exports, err := flyscrape.Compile(script, imports)
+	exports, err := flyscrape.Compile(script, imports, options)
 	require.NoError(t, err)
 
 	h, ok := exports["text"].(string)
@@ -55,8 +57,10 @@ func TestJSLibHTTPGet(t *testing.T) {
 		Transport: flyscrape.MockTransport(200, html),
 	}
 
+	options := flyscrape.BuildOptions("")
+
 	imports, _ := flyscrape.NewJSLibrary(client)
-	exports, err := flyscrape.Compile(script, imports)
+	exports, err := flyscrape.Compile(script, imports, options)
 	require.NoError(t, err)
 
 	body, ok := exports["body"].(string)
@@ -106,8 +110,10 @@ func TestJSLibHTTPPostForm(t *testing.T) {
 		}),
 	}
 
+	options := flyscrape.BuildOptions("")
+
 	imports, _ := flyscrape.NewJSLibrary(client)
-	exports, err := flyscrape.Compile(script, imports)
+	exports, err := flyscrape.Compile(script, imports, options)
 	require.NoError(t, err)
 
 	body, ok := exports["body"].(string)
@@ -158,8 +164,10 @@ func TestJSLibHTTPPostJSON(t *testing.T) {
 		}),
 	}
 
+	options := flyscrape.BuildOptions("")
+
 	imports, _ := flyscrape.NewJSLibrary(client)
-	exports, err := flyscrape.Compile(script, imports)
+	exports, err := flyscrape.Compile(script, imports, options)
 	require.NoError(t, err)
 
 	body, ok := exports["body"].(string)
@@ -227,8 +235,10 @@ func TestJSLibHTTPDownload(t *testing.T) {
 		}),
 	}
 
+	options := flyscrape.BuildOptions("")
+
 	imports, wait := flyscrape.NewJSLibrary(client)
-	_, err = flyscrape.Compile(script, imports)
+	_, err = flyscrape.Compile(script, imports, options)
 	require.NoError(t, err)
 
 	wait()

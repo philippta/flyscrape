@@ -63,19 +63,16 @@ func (e Exports) Setup() {
 
 type Imports map[string]map[string]any
 
-func Compile(src string, imports Imports) (Exports, error) {
-	src, err := build(src)
+func Compile(src string, imports Imports, options api.TransformOptions) (Exports, error) {
+	src, err := build(src, options)
 	if err != nil {
 		return nil, err
 	}
 	return vm(src, imports)
 }
 
-func build(src string) (string, error) {
-	res := api.Transform(src, api.TransformOptions{
-		Platform: api.PlatformNode,
-		Format:   api.FormatCommonJS,
-	})
+func build(src string, options api.TransformOptions) (string, error) {
+	res := api.Transform(src, options)
 
 	var errs []error
 	for _, msg := range res.Errors {

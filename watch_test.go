@@ -23,7 +23,7 @@ func TestWatch(t *testing.T) {
 	done := make(chan struct{})
 
 	go func() {
-		err := flyscrape.Watch(f.Name(), func(s string) error {
+		err := flyscrape.Watch(f.Name(), func(s string, p string) error {
 			calls++
 			if calls == 1 {
 				require.Equal(t, "test 1", s)
@@ -49,7 +49,7 @@ func TestWatchError(t *testing.T) {
 
 	done := make(chan struct{})
 	go func() {
-		err := flyscrape.Watch(f.Name(), func(s string) error {
+		err := flyscrape.Watch(f.Name(), func(s string, p string) error {
 			return errors.New("test")
 		})
 		require.Error(t, err)
