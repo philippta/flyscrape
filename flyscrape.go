@@ -28,9 +28,18 @@ func Run(file string, overrides map[string]any) error {
 	imports, wait := NewJSLibrary(client)
 	defer wait()
 
+	pop, err := pushDir(file)
+	if err != nil {
+		return err
+	}
+
 	exports, err := Compile(string(src), imports)
 	if err != nil {
 		return fmt.Errorf("failed to compile script: %w", err)
+	}
+
+	if err := pop(); err != nil {
+		return err
 	}
 
 	cfg := exports.Config()
@@ -63,10 +72,19 @@ func Dev(file string, overrides map[string]any) error {
 		imports, wait := NewJSLibrary(client)
 		defer wait()
 
+		pop, err := pushDir(file)
+		if err != nil {
+			return err
+		}
+
 		exports, err := Compile(s, imports)
 		if err != nil {
 			printCompileErr(file, err)
 			return nil
+		}
+
+		if err := pop(); err != nil {
+			return err
 		}
 
 		cfg := exports.Config()
@@ -146,4 +164,22 @@ func updateCfgMultiple(cfg Config, updates map[string]any) Config {
 	}
 
 	return []byte(c)
+}
+
+func pushDir(file string) (func() error, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current working directory: %w", err)
+	}
+	if err := os.Chdir(filepath.Dir(file)); err != nil {
+		return nil, fmt.Errorf("failed to change working directory: %w", err)
+	}
+	pop := func() error {
+		if err := os.Chdir(cwd); err != nil {
+			return fmt.Errorf("failed to change working directory: %w", err)
+		}
+		return nil
+	}
+	return pop, nil
+
 }
