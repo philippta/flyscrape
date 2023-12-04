@@ -11,17 +11,6 @@ import (
 	"log"
 	"os"
 	"strings"
-
-	_ "github.com/philippta/flyscrape/modules/cache"
-	_ "github.com/philippta/flyscrape/modules/depth"
-	_ "github.com/philippta/flyscrape/modules/domainfilter"
-	_ "github.com/philippta/flyscrape/modules/followlinks"
-	_ "github.com/philippta/flyscrape/modules/headers"
-	_ "github.com/philippta/flyscrape/modules/jsonprint"
-	_ "github.com/philippta/flyscrape/modules/proxy"
-	_ "github.com/philippta/flyscrape/modules/ratelimit"
-	_ "github.com/philippta/flyscrape/modules/starturl"
-	_ "github.com/philippta/flyscrape/modules/urlfilter"
 )
 
 func main() {

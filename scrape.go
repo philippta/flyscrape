@@ -14,8 +14,6 @@ import (
 	"github.com/cornelk/hashmap"
 )
 
-type FetchFunc func(url string) (string, error)
-
 type Context interface {
 	ScriptName() string
 	Visit(url string)
