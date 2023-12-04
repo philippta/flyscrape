@@ -216,8 +216,8 @@ func TestJSConfig(t *testing.T) {
 
 func TestJSImports(t *testing.T) {
 	js := `
-    import A from "pkg-a"
-    import { bar } from "pkg-a/pkg-b"
+    import A from "flyscrape"
+    import { bar } from "flyscrape/foo"
 
     export const config = {}
     export default function() {}
@@ -226,10 +226,10 @@ func TestJSImports(t *testing.T) {
 	export const b = bar()
     `
 	imports := flyscrape.Imports{
-		"pkg-a": map[string]any{
+		"flyscrape": map[string]any{
 			"foo": 10,
 		},
-		"pkg-a/pkg-b": map[string]any{
+		"flyscrape/foo": map[string]any{
 			"bar": func() string {
 				return "baz"
 			},

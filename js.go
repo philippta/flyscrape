@@ -72,9 +72,19 @@ func Compile(src string, imports Imports) (Exports, error) {
 }
 
 func build(src string) (string, error) {
-	res := api.Transform(src, api.TransformOptions{
+	res := api.Build(api.BuildOptions{
+		Loader: map[string]api.Loader{
+			".txt":  api.LoaderText,
+			".json": api.LoaderJSON,
+		},
+		Bundle: true,
+		Stdin: &api.StdinOptions{
+			Contents:   src,
+			ResolveDir: ".",
+		},
 		Platform: api.PlatformNode,
 		Format:   api.FormatCommonJS,
+		External: []string{"flyscrape"},
 	})
 
 	var errs []error
@@ -89,8 +99,11 @@ func build(src string) (string, error) {
 	if len(res.Errors) > 0 {
 		return "", errors.Join(errs...)
 	}
+	if len(res.OutputFiles) == 0 {
+		return "", errors.New("no output generated")
+	}
 
-	return string(res.Code), nil
+	return string(res.OutputFiles[0].Contents), nil
 }
 
 func vm(src string, imports Imports) (Exports, error) {
