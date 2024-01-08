@@ -17,6 +17,8 @@ import (
 	"github.com/tidwall/sjson"
 )
 
+var Version string
+
 func Run(file string, overrides map[string]any) error {
 	src, err := os.ReadFile(file)
 	if err != nil {

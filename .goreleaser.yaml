@@ -13,6 +13,7 @@ builds:
       - CXX=x86_64-linux-gnu-g++
     ldflags:
       - -s -w
+      - -X github.com/philippta/flyscrape.Version={{.Tag}}
     flags:
       - -mod=readonly
     tags:
@@ -33,6 +34,7 @@ builds:
       - CXX=aarch64-linux-gnu-g++
     ldflags:
       - -s -w
+      - -X github.com/philippta/flyscrape.Version={{.Tag}}
     flags:
       - -mod=readonly
     tags:
@@ -55,6 +57,7 @@ builds:
       - CXX=o64-clang++
     ldflags:
       - -s -w
+      - -X github.com/philippta/flyscrape.Version={{.Tag}}
     flags:
       - -mod=readonly
     tags:
@@ -75,6 +78,7 @@ builds:
       - CXX=oa64-clang++
     ldflags:
       - -s -w
+      - -X github.com/philippta/flyscrape.Version={{.Tag}}
     flags:
       - -mod=readonly
     tags:
