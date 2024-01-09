@@ -24,7 +24,7 @@
 
 ## Features
 
-- **Highly Configurable:** 10 options to fine-tune your scraper.
+- **Highly Configurable:** 13 options to fine-tune your scraper.
 - **Standalone:** flyscrape comes as a single binary executable.
 - **Scriptable:** Use JavaScript to write your data extraction logic.
 - **Simple API:** Extract data from HTML pages with a familiar API.
@@ -32,21 +32,35 @@
 - **Request Caching:** Re-run scripts on websites you already scraped.
 - **Zero Dependencies:** No need to fill up your disk with npm packages.
 
-## Example script
+## Overview
+
+- [Example](#example)
+- [Installation](#installation)
+    - [Pre-compiled binary](#pre-compiled-binary)
+    - [Compile from source](#compile-from-source)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Query API](#query-api)
+- [Flyscrape API](#flyscrape-api)
+    - [Document Parsing](#document-parsing)
+    - [Basic HTTP Requests](#basic-http-requests)
+    - [File Downloads](#file-downloads)
+- [Issues and suggestions](#issues-and-suggestions)
+
+## Example
+
+This example scrapes the first few pages form Hacker News, specifically the New, Show and Ask sections.
 
 ```javascript
 export const config = {
-    url: "https://news.ycombinator.com/",
-    // urls: []               // Specify additional URLs to start from.      (default = none)
-    // depth: 0,              // Specify how deep links should be followed.  (default = 0, no follow)
-    // follow: [],            // Speficy the css selectors to follow         (default = ["a[href]"])
-    // allowedDomains: [],    // Specify the allowed domains. ['*'] for all. (default = domain from url)
-    // blockedDomains: [],    // Specify the blocked domains.                (default = none)
-    // allowedURLs: [],       // Specify the allowed URLs as regex.          (default = all allowed)
-    // blockedURLs: [],       // Specify the blocked URLs as regex.          (default = none)
-    // rate: 100,             // Specify the rate in requests per second.    (default = no rate limit)
-    // proxies: [],           // Specify the HTTP(S) proxy URLs.             (default = no proxy)
-    // cache: "file",         // Enable file-based request caching.          (default = no cache)
+    urls: [
+        "https://news.ycombinator.com/new",
+        "https://news.ycombinator.com/show",
+        "https://news.ycombinator.com/ask",
+    ],
+    depth: 5,
+    cache: "file",
+    follow: ["a.morelink[href]"],
 }
 
 export default function ({ doc, absoluteURL }) {
@@ -71,9 +85,9 @@ export default function ({ doc, absoluteURL }) {
 $ flyscrape run hackernews.js
 [
   {
-    "url": "https://news.ycombinator.com/",
+    "url": "https://news.ycombinator.com/new",
     "data": {
-      "title": "Hacker News",
+      "title": "New Links | Hacker News",
       "posts": [
         {
           "title": "Show HN: flyscrape - An standalone and scriptable web scraper",
@@ -98,7 +112,7 @@ Check out the [examples folder](examples) for more detailed examples.
 
 To compile flyscrape from source, follow these steps:
 
-1. Install Go: Make sure you have Go installed on your system. If not, you can download it from [https://golang.org/](https://golang.org/).
+1. Install Go: Make sure you have Go installed on your system. If not, you can download it from [https://go.dev/](https://go.dev/).
 
 2. Install flyscrape: Open a terminal and run the following command:
 
@@ -122,7 +136,7 @@ Examples:
     $ flyscrape run example.js --url "http://other.com"
 
     # Enable proxy support.
-    $ flyscrape run example.js --proxies "http://someproxy:8043"
+    $ flyscrape run example.js --proxy "http://someproxy:8043"
 
     # Follow paginated links.
     $ flyscrape run example.js --depth 5 --follow ".next-button > a"
@@ -134,23 +148,64 @@ Below is an example scraping script that showcases the capabilities of flyscrape
 
 ```javascript
 export const config = {
-    url: "https://example.com/",                        // Specify the URL to start scraping from.
-    urls: [                                             // Specify the URL(s) to start scraping from. If both `url` and `urls`
-        "https://example.com/foo",                      // are provided, all of the specified URLs will be scraped.
-        "https://example.com/bar",
+    // Specify the URL to start scraping from.
+    url: "https://example.com/",
+
+    // Specify the multiple URLs to start scraping from.
+    // (default = [])
+    urls: [                          
+        "https://anothersite.com/",
+        "https://yetanother.com/",
     ],
-    depth: 0,                                           // Specify how deep links should be followed.  (default = 0, no follow)
-    follow: [],                                         // Speficy the css selectors to follow         (default = ["a[href]"])
-    allowedDomains: [],                                 // Specify the allowed domains. ['*'] for all. (default = domain from url)
-    blockedDomains: [],                                 // Specify the blocked domains.                (default = none)
-    allowedURLs: [],                                    // Specify the allowed URLs as regex.          (default = all allowed)
-    blockedURLs: [],                                    // Specify the blocked URLs as regex.          (default = none)
-    rate: 100,                                          // Specify the rate in requests per second.    (default = no rate limit)
-    proxies: [],                                        // Specify the HTTP(S) proxy URLs.             (default = no proxy)
-    cache: "file",                                      // Enable file-based request caching.          (default = no cache)
-    headers: {                                          // Specify the HTTP request header.            (default = none)
-        "Authorization": "Basic ZGVtbzpwQDU1dzByZA==",
-        "User-Agent": "Gecko/1.0",
+
+    // Specify how deep links should be followed.
+    // (default = 0, no follow)
+    depth: 5,                        
+
+    // Speficy the css selectors to follow
+    // (default = ["a[href]"])
+    follow: [".next > a", ".related a"],                      
+ 
+    // Specify the allowed domains. ['*'] for all.
+    // (default = domain from url)
+    allowedDomains: ["example.com", "anothersite.com"],              
+ 
+    // Specify the blocked domains.
+    // (default = none)
+    blockedDomains: ["somesite.com"],              
+
+    // Specify the allowed URLs as regex.
+    // (default = all allowed)
+    allowedURLs: ["/posts", "/articles/\d+"],                 
+ 
+    // Specify the blocked URLs as regex.
+    // (default = none)
+    blockedURLs: ["/admin"],                 
+   
+    // Specify the rate in requests per second.
+    // (default = no rate limit)
+    rate: 100,                       
+
+    // Specify a single HTTP(S) proxy URL.
+    // (default = no proxy)
+    proxy: "http://someproxy.com:8043",
+
+    // Specify multiple HTTP(S) proxy URLs.
+    // (default = no proxy)
+    proxies: [
+      "http://someproxy.com:8043",
+      "http://someotherproxy.com:8043",
+    ],                     
+
+    // Enable file-based request caching.
+    // (default = no cache)
+    cache: "file",                   
+
+    // Specify the HTTP request header.
+    // (default = none)
+    headers: {                       
+        "Authorization": "Bearer ...",
+        "User-Agent": "Mozilla ...",
     },
 };
 
