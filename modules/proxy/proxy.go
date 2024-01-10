@@ -19,6 +19,7 @@ func init() {
 
 type Module struct {
 	Proxies []string `json:"proxies"`
+	Proxy   string   `json:"proxy"`
 
 	transports []*http.Transport
 }
@@ -35,13 +36,14 @@ func (m *Module) Provision(ctx flyscrape.Context) {
 		return
 	}
 
-	for _, purl := range m.Proxies {
+	for _, purl := range append(m.Proxies, m.Proxy) {
 		if parsed, err := url.Parse(purl); err == nil {
 			m.transports = append(m.transports, &http.Transport{
 				Proxy:           http.ProxyURL(parsed),
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			})
 		}
+
 	}
 }
 

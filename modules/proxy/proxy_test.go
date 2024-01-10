@@ -35,19 +35,21 @@ func TestProxy(t *testing.T) {
 }
 
 func TestProxyMultiple(t *testing.T) {
-	calls := []int{0, 0}
+	calls := []int{0, 0, 0}
 	p0 := newProxy(func() { calls[0]++ })
 	p1 := newProxy(func() { calls[1]++ })
+	p2 := newProxy(func() { calls[2]++ })
 	defer p0.Close()
 	defer p1.Close()
+	defer p2.Close()
 
-	mod := &proxy.Module{Proxies: []string{p0.URL, p1.URL}}
+	mod := &proxy.Module{Proxies: []string{p0.URL, p1.URL}, Proxy: p2.URL}
 	mod.Provision(nil)
 	trans := mod.AdaptTransport(nil)
 
 	req := httptest.NewRequest("GET", "http://www.example.com/", nil)
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 50; i++ {
 		resp, err := trans.RoundTrip(req)
 		require.NoError(t, err)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -55,7 +57,8 @@ func TestProxyMultiple(t *testing.T) {
 
 	require.Greater(t, calls[0], 1)
 	require.Greater(t, calls[1], 1)
-	require.Equal(t, 10, calls[0]+calls[1])
+	require.Greater(t, calls[2], 1)
+	require.Equal(t, 50, calls[0]+calls[1]+calls[2])
 }
 
 func newProxy(f func()) *httptest.Server {
