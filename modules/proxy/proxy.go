@@ -37,6 +37,9 @@ func (m *Module) Provision(ctx flyscrape.Context) {
 	}
 
 	for _, purl := range append(m.Proxies, m.Proxy) {
+		if purl == "" {
+			continue
+		}
 		if parsed, err := url.Parse(purl); err == nil {
 			m.transports = append(m.transports, &http.Transport{
 				Proxy:           http.ProxyURL(parsed),
