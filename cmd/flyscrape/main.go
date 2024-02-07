@@ -20,6 +20,7 @@ import (
 	_ "github.com/philippta/flyscrape/modules/output/ndjson"
 	_ "github.com/philippta/flyscrape/modules/proxy"
 	_ "github.com/philippta/flyscrape/modules/ratelimit"
+	_ "github.com/philippta/flyscrape/modules/retry"
 	_ "github.com/philippta/flyscrape/modules/starturl"
 	_ "github.com/philippta/flyscrape/modules/urlfilter"
 )

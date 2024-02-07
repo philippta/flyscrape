@@ -42,15 +42,9 @@ func Watch(path string, fn func(string) error) error {
 
 	for {
 		select {
-		case event, ok := <-watcher.Events:
+		case _, ok := <-watcher.Events:
 			if !ok {
 				return nil
-			}
-			if event.Has(fsnotify.Remove) {
-				continue
-			}
-			if event.Has(fsnotify.Chmod) {
-				continue
 			}
 			watcher.Remove(path)
 			watcher.Add(path)
