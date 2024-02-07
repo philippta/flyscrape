@@ -32,7 +32,7 @@ func TestRatelimit(t *testing.T) {
 			},
 		},
 		&ratelimit.Module{
-			Rate: 100,
+			Rate: 240,
 		},
 	}
 
@@ -41,12 +41,46 @@ func TestRatelimit(t *testing.T) {
 	scraper.Modules = mods
 	scraper.Run()
 
-	first := times[0].Add(-10 * time.Millisecond)
-	second := times[1].Add(-20 * time.Millisecond)
+	first := times[0].Add(-250 * time.Millisecond)
+	second := times[1].Add(-500 * time.Millisecond)
 
-	require.Less(t, first.Sub(start), 2*time.Millisecond)
-	require.Less(t, second.Sub(start), 2*time.Millisecond)
+	require.Less(t, first.Sub(start), 250*time.Millisecond)
+	require.Less(t, second.Sub(start), 250*time.Millisecond)
 
-	require.Less(t, start.Sub(first), 2*time.Millisecond)
-	require.Less(t, start.Sub(second), 2*time.Millisecond)
+	require.Less(t, start.Sub(first), 250*time.Millisecond)
+	require.Less(t, start.Sub(second), 250*time.Millisecond)
+}
+
+func TestRatelimitConcurrency(t *testing.T) {
+	var times []time.Time
+
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com"},
+		&followlinks.Module{},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+					times = append(times, time.Now())
+					time.Sleep(10 * time.Millisecond)
+					return flyscrape.MockResponse(200, `
+						<a href="foo"></a>
+						<a href="bar"></a>
+						<a href="baz"></a>
+						<a href="qux"></a>
+					`)
+				})
+			},
+		},
+		&ratelimit.Module{
+			Concurrency: 2,
+		},
+	}
+
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
+	scraper.Run()
+
+	require.Len(t, times, 5)
+	require.Less(t, times[2].Sub(times[1]), time.Millisecond)
+	require.Less(t, times[4].Sub(times[3]), time.Millisecond)
 }

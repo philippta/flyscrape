@@ -175,8 +175,11 @@ export const config = {
     // Specify the blocked URLs as regex.                  (default = none)
     blockedURLs: ["/admin"],                 
    
-    // Specify the rate in requests per second.            (default = no rate limit)
-    rate: 100,                       
+    // Specify the rate in requests per minute.            (default = no rate limit)
+    rate: 60,                       
+
+    // Specify the number of concurrent requests.          (default = no limit)
+    concurrency: 1,                       
 
     // Specify a single HTTP(S) proxy URL.                 (default = no proxy)
     proxy: "http://someproxy.com:8043",
