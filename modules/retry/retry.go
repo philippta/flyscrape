@@ -64,6 +64,7 @@ func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 
 func shouldRetry(resp *http.Response, err error) bool {
 	statusCodes := []int{
+		http.StatusForbidden,
 		http.StatusRequestTimeout,
 		http.StatusTooEarly,
 		http.StatusTooManyRequests,
