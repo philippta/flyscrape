@@ -136,10 +136,16 @@ Examples:
     $ flyscrape run example.js --url "http://other.com"
 
     # Enable proxy support.
-    $ flyscrape run example.js --proxy "http://someproxy:8043"
+    $ flyscrape run example.js --proxies "http://someproxy:8043"
 
     # Follow paginated links.
     $ flyscrape run example.js --depth 5 --follow ".next-button > a"
+
+    # Set the output format to ndjson.
+    $ flyscrape run example.js --output.format ndjson
+
+    # Write the output to a file.
+    $ flyscrape run example.js --output.file results.json
 ```
 
 ## Configuration
@@ -197,6 +203,16 @@ export const config = {
     headers: {                       
         "Authorization": "Bearer ...",
         "User-Agent": "Mozilla ...",
+    },
+
+    // Specify the output options.
+    output: {
+        // Specify the output file.                        (default = stdout)
+        file: "results.json",
+        
+        // Specify the output format.                      (default = json)
+        // Options: "json" | "ndjson"
+        format: "json",
     },
 };
 
