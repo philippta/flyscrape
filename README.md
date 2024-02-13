@@ -19,7 +19,7 @@
 <br />
 
 <p align="center">
-<a href="#installation">Installation</a> · <a href="https://flyscrape.com/docs/">Documentation</a> · <a href="https://github.com/philippta/flyscrape/releases">Releases</a> · <a href="https://discord.gg/UrbBPmGyTq">Discord</a>
+<a href="#installation">Installation</a> · <a href="https://flyscrape.com/docs/">Documentation</a> · <a href="https://github.com/philippta/flyscrape/releases">Releases</a>
 </p>
 
 ## Features
