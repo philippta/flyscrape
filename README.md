@@ -36,6 +36,8 @@
 
 - [Example](#example)
 - [Installation](#installation)
+    - [Recommended](#recommended)
+    - [Homebrew](#homebrew)
     - [Pre-compiled binary](#pre-compiled-binary)
     - [Compile from source](#compile-from-source)
 - [Usage](#usage)
@@ -103,6 +105,22 @@ $ flyscrape run hackernews.js
 Check out the [examples folder](examples) for more detailed examples.
 
 ## Installation
+
+### Recommended
+
+The easiest way to install `flyscrape` is via its install script.
+
+```bash
+curl -fsSL https://flyscrape.com/install | bash
+```
+
+### Homebrew
+
+For macOS users `flyscrape` is also available via homebrew:
+
+```bash
+brew install flyscrape
+```
 
 ### Pre-compiled binary
 
