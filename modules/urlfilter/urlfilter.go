@@ -16,6 +16,7 @@ func init() {
 
 type Module struct {
 	URL         string   `json:"url"`
+	URLs        []string `json:"urls"`
 	AllowedURLs []string `json:"allowedURLs"`
 	BlockedURLs []string `json:"blockedURLs"`
 
@@ -60,6 +61,11 @@ func (m *Module) ValidateRequest(r *flyscrape.Request) bool {
 	// allow root url
 	if r.URL == m.URL {
 		return true
+	}
+	for _, u := range m.URLs {
+		if r.URL == u {
+			return true
+		}
 	}
 
 	// allow if no filter is set

@@ -15,6 +15,7 @@ func init() {
 
 type Module struct {
 	URL            string   `json:"url"`
+	URLs           []string `json:"urls"`
 	AllowedDomains []string `json:"allowedDomains"`
 	BlockedDomains []string `json:"blockedDomains"`
 
@@ -29,11 +30,15 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 }
 
 func (m *Module) Provision(v flyscrape.Context) {
-	if m.URL == "" {
-		return
+	if m.URL != "" {
+		if u, err := url.Parse(m.URL); err == nil {
+			m.AllowedDomains = append(m.AllowedDomains, u.Host())
+		}
 	}
-	if u, err := url.Parse(m.URL); err == nil {
-		m.AllowedDomains = append(m.AllowedDomains, u.Host())
+	for _, u := range m.URLs {
+		if u, err := url.Parse(u); err == nil {
+			m.AllowedDomains = append(m.AllowedDomains, u.Host())
+		}
 	}
 }
 
