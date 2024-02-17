@@ -1,7 +1,7 @@
 import urls from "./urls.txt"
 
 export const config = {
-  urls: urls.split("\n").filter(Boolean)
+  urls: urls.split("\n")
 };
 
 export default function({ doc }) {

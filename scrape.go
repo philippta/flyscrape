@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/cookiejar"
+	"strings"
 	"sync"
 
 	"github.com/cornelk/hashmap"
@@ -210,6 +211,11 @@ func (s *Scraper) process(url string, depth int) {
 }
 
 func (s *Scraper) enqueueJob(url string, depth int) {
+	url = strings.TrimSpace(url)
+	if url == "" {
+		return
+	}
+
 	if _, ok := s.visited.Get(url); ok {
 		return
 	}
