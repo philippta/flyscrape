@@ -5,11 +5,11 @@
 package flyscrape
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
-	"strconv"
 	"sync"
 
 	"github.com/cornelk/hashmap"
@@ -79,7 +79,7 @@ func (s *Scraper) ScriptName() string {
 }
 
 func (s *Scraper) Run() {
-	s.jobs = make(chan target, 1024)
+	s.jobs = make(chan target, 1<<20)
 	s.visited = hashmap.New[string, struct{}]()
 
 	s.initClient()
@@ -124,11 +124,13 @@ func (s *Scraper) initClient() {
 }
 
 func (s *Scraper) scrape() {
-	for job := range s.jobs {
-		job := job
+	for i := 0; i < 500; i++ {
 		go func() {
-			s.process(job.url, job.depth)
-			s.wg.Done()
+			for job := range s.jobs {
+				job := job
+				s.process(job.url, job.depth)
+				s.wg.Done()
+			}
 		}()
 	}
 }
@@ -189,7 +191,7 @@ func (s *Scraper) process(url string, depth int) {
 	response.Headers = resp.Header
 
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		response.Error = strconv.Itoa(response.StatusCode) + " " + http.StatusText(response.StatusCode)
+		response.Error = fmt.Errorf("%d %s", response.StatusCode, http.StatusText(response.StatusCode))
 	}
 
 	response.Body, err = io.ReadAll(resp.Body)
