@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/cookiejar"
+	"strconv"
 	"sync"
 
 	"github.com/cornelk/hashmap"
@@ -186,6 +187,10 @@ func (s *Scraper) process(url string, depth int) {
 
 	response.StatusCode = resp.StatusCode
 	response.Headers = resp.Header
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		response.Error = strconv.Itoa(response.StatusCode) + " " + http.StatusText(response.StatusCode)
+	}
 
 	response.Body, err = io.ReadAll(resp.Body)
 	if err != nil {
