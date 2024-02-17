@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/philippta/flyscrape"
@@ -28,6 +29,7 @@ type Module struct {
 
 	once bool
 	w    io.WriteCloser
+	mu   *sync.Mutex
 }
 
 func (Module) ModuleInfo() flyscrape.ModuleInfo {
@@ -41,6 +43,8 @@ func (m *Module) Provision(ctx flyscrape.Context) {
 	if m.disabled() {
 		return
 	}
+
+	m.mu = &sync.Mutex{}
 
 	if m.Output.File == "" {
 		m.w = nopCloser{os.Stdout}
@@ -64,13 +68,6 @@ func (m *Module) ReceiveResponse(resp *flyscrape.Response) {
 		return
 	}
 
-	if !m.once {
-		fmt.Fprintln(m.w, "[")
-		m.once = true
-	} else {
-		fmt.Fprintln(m.w, ",")
-	}
-
 	o := output{
 		URL:       resp.Request.URL,
 		Data:      resp.Data,
@@ -78,6 +75,16 @@ func (m *Module) ReceiveResponse(resp *flyscrape.Response) {
 	}
 	if resp.Error != nil {
 		o.Error = resp.Error.Error()
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if !m.once {
+		fmt.Fprintln(m.w, "[")
+		m.once = true
+	} else {
+		fmt.Fprintln(m.w, ",")
 	}
 
 	var buf bytes.Buffer
