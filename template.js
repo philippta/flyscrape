@@ -52,7 +52,7 @@ export const config = {
 
     // Use the cookie store of your local browser.         (default = off)
     // Options: "chrome" | "edge" | "firefox"
-    // cookies: "chrome"
+    // cookies: "chrome",
 
     // Specify the output options.
     // output: {
