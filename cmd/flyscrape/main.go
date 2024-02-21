@@ -12,6 +12,7 @@ import (
 
 	"github.com/philippta/flyscrape/cmd"
 	_ "github.com/philippta/flyscrape/modules/cache"
+	_ "github.com/philippta/flyscrape/modules/cookies"
 	_ "github.com/philippta/flyscrape/modules/depth"
 	_ "github.com/philippta/flyscrape/modules/domainfilter"
 	_ "github.com/philippta/flyscrape/modules/followlinks"

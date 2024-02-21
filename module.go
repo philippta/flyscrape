@@ -98,6 +98,7 @@ var (
 		"retry",
 		"ratelimit",
 		"cache",
+		"cookies",
 		"headers",
 	}
 )

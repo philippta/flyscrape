@@ -223,6 +223,10 @@ export const config = {
         "User-Agent": "Mozilla ...",
     },
 
+    // Use the cookie store of your local browser.         (default = off)
+    // Options: "chrome" | "edge" | "firefox"
+    cookies: "chrome"
+
     // Specify the output options.
     output: {
         // Specify the output file.                        (default = stdout)

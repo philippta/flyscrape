@@ -49,6 +49,20 @@ export const config = {
     //     "Authorization": "Bearer ...",
     //     "User-Agent": "Mozilla ...",
     // },
+
+    // Use the cookie store of your local browser.         (default = off)
+    // Options: "chrome" | "edge" | "firefox"
+    // cookies: "chrome"
+
+    // Specify the output options.
+    // output: {
+    //     // Specify the output file.                        (default = stdout)
+    //     file: "results.json",
+    //
+    //     // Specify the output format.                      (default = json)
+    //     // Options: "json" | "ndjson"
+    //     format: "json",
+    // },
 };
 
 export default function({ doc, absoluteURL }) {
