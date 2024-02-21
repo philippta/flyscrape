@@ -53,7 +53,6 @@ func NewScraper() *Scraper {
 
 type Scraper struct {
 	ScrapeFunc ScrapeFunc
-	SetupFunc  func()
 	Script     string
 	Modules    []Module
 	Client     *http.Client
@@ -95,10 +94,6 @@ func (s *Scraper) Run() {
 		if v, ok := mod.(TransportAdapter); ok {
 			s.Client.Transport = v.AdaptTransport(s.Client.Transport)
 		}
-	}
-
-	if s.SetupFunc != nil {
-		s.SetupFunc()
 	}
 
 	go s.scrape()

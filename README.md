@@ -238,11 +238,6 @@ export const config = {
     },
 };
 
-export function setup() {
-    // Optional setup function, called once before scraping starts.
-    // Can be used for authentication.
-}
-
 export default function ({ doc, url, absoluteURL }) {
     // doc              - Contains the parsed HTML document
     // url              - Contains the scraped URL

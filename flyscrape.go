@@ -49,7 +49,6 @@ func Run(file string, overrides map[string]any) error {
 
 	scraper := NewScraper()
 	scraper.ScrapeFunc = exports.Scrape
-	scraper.SetupFunc = exports.Setup
 	scraper.Script = file
 	scraper.Client = client
 	scraper.Modules = LoadModules(cfg)
@@ -96,7 +95,6 @@ func Dev(file string, overrides map[string]any) error {
 
 		scraper := NewScraper()
 		scraper.ScrapeFunc = exports.Scrape
-		scraper.SetupFunc = exports.Setup
 		scraper.Script = file
 		scraper.Client = client
 		scraper.Modules = LoadModules(cfg)

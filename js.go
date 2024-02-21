@@ -55,12 +55,6 @@ func (e Exports) Scrape(p ScrapeParams) (any, error) {
 	return fn(p)
 }
 
-func (e Exports) Setup() {
-	if fn, ok := e["setup"].(func(goja.FunctionCall) goja.Value); ok {
-		fn(goja.FunctionCall{})
-	}
-}
-
 type Imports map[string]map[string]any
 
 func Compile(src string, imports Imports) (Exports, error) {
