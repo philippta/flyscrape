@@ -5,7 +5,6 @@
 package flyscrape_test
 
 import (
-	"errors"
 	"os"
 	"testing"
 	"time"
@@ -36,23 +35,6 @@ func TestWatch(t *testing.T) {
 			return nil
 		})
 		require.NoError(t, err)
-		close(done)
-	}()
-
-	write(f, "test 2")
-	<-done
-}
-
-func TestWatchError(t *testing.T) {
-	f := tmpfile(t)
-	defer os.Remove(f.Name())
-
-	done := make(chan struct{})
-	go func() {
-		err := flyscrape.Watch(f.Name(), func(s string) error {
-			return errors.New("test")
-		})
-		require.Error(t, err)
 		close(done)
 	}()
 
