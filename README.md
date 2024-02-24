@@ -13,21 +13,29 @@
 <br />
 
 <p align="center">
-<b>flyscrape</b> is a standalone and scriptable web scraper, combining the speed of Go with the flexibility of JavaScript. — Focus on data extraction rather than request juggling.
+Flyscrape is a command-line web scraping tool designed for those without <br />advanced programming skills, enabling precise extraction of website data. 
 </p>
 
 <br />
 
 <p align="center">
-<a href="#installation">Installation</a> · <a href="https://flyscrape.com/docs/">Documentation</a> · <a href="https://github.com/philippta/flyscrape/releases">Releases</a>
+<a href="#installation">Installation</a> · <a href="https://flyscrape.com/docs/getting-started">Documentation</a> · <a href="https://github.com/philippta/flyscrape/releases">Releases</a>
 </p>
+
+
+## Demo
+
+
+<a href="https://www.youtube.com/watch?v=Yj11v4n9JHA">
+  <img src=".github/assets/flyscrape-demo.jpg" style="border-radius: 6px">
+</a>
 
 ## Features
 
 - **Standalone:** Flyscrape comes as a single binary executable.
 - **jQuery-like:** Extract data from HTML pages with a familiar API.
 - **Scriptable:** Use JavaScript to write your data extraction logic.
-- **Tons of features:** 20 features to configure the scraping behavior.
+- **System Cookies:** Give Flyscrape access to your browsers cookie store.
 - **Browser Mode:** Render JavaScript heavy pages using a headless Browser.
 
 ## Overview
