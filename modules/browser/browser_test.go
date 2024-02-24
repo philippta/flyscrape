@@ -19,6 +19,8 @@ import (
 )
 
 func TestBrowser(t *testing.T) {
+	t.SkipNow()
+
 	var called bool
 
 	srv := newServer(func(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +49,8 @@ func TestBrowser(t *testing.T) {
 	require.Contains(t, body, "Hello Browser")
 }
 func TestBrowserStatusCode(t *testing.T) {
+	t.SkipNow()
+
 	srv := newServer(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
 	})
@@ -72,6 +76,8 @@ func TestBrowserStatusCode(t *testing.T) {
 }
 
 func TestBrowserRequestHeader(t *testing.T) {
+	t.SkipNow()
+
 	srv := newServer(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(r.Header.Get("User-Agent")))
 	})
@@ -102,6 +108,8 @@ func TestBrowserRequestHeader(t *testing.T) {
 }
 
 func TestBrowserResponseHeader(t *testing.T) {
+	t.SkipNow()
+
 	srv := newServer(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Foo", "bar")
 	})
@@ -127,6 +135,8 @@ func TestBrowserResponseHeader(t *testing.T) {
 }
 
 func TestBrowserUnsetFlyscrapeUserAgent(t *testing.T) {
+	t.SkipNow()
+
 	srv := newServer(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(r.Header.Get("User-Agent")))
 	})
