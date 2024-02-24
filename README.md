@@ -43,7 +43,6 @@
 - [Query API](#query-api)
 - [Flyscrape API](#flyscrape-api)
     - [Document Parsing](#document-parsing)
-    - [Basic HTTP Requests](#basic-http-requests)
     - [File Downloads](#file-downloads)
 - [Issues and suggestions](#issues-and-suggestions)
 
