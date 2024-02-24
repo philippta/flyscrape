@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -33,26 +34,25 @@ func Watch(path string, fn func(string) error) error {
 		return fn(string(data))
 	}
 
-	if err := update(); err != nil {
-		if errors.Is(err, StopWatch) {
-			return nil
-		}
-		return err
+	if err := update(); errors.Is(err, StopWatch) {
+		return nil
 	}
 
 	for {
 		select {
-		case _, ok := <-watcher.Events:
+		case e, ok := <-watcher.Events:
 			if !ok {
 				return nil
 			}
-			watcher.Remove(path)
-			watcher.Add(path)
-			if err := update(); err != nil {
-				if errors.Is(err, StopWatch) {
+			if e.Has(fsnotify.Rename) {
+				time.Sleep(10 * time.Millisecond)
+				watcher.Remove(path)
+				watcher.Add(path)
+			}
+			if e.Has(fsnotify.Write) || e.Has(fsnotify.Rename) {
+				if err := update(); errors.Is(err, StopWatch) {
 					return nil
 				}
-				return nil
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
