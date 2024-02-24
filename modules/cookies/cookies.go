@@ -43,7 +43,7 @@ func (m Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 
 	var stores []kooky.CookieStore
 	for _, store := range kooky.FindAllCookieStores() {
-		if store.Browser() == m.Cookies {
+		if store.Browser() == m.Cookies && store.IsDefaultProfile() {
 			stores = append(stores, store)
 		}
 	}

@@ -24,13 +24,11 @@
 
 ## Features
 
-- **Highly Configurable:** 13 options to fine-tune your scraper.
-- **Standalone:** flyscrape comes as a single binary executable.
+- **Standalone:** Flyscrape comes as a single binary executable.
+- **jQuery-like:** Extract data from HTML pages with a familiar API.
 - **Scriptable:** Use JavaScript to write your data extraction logic.
-- **Simple API:** Extract data from HTML pages with a familiar API.
-- **Fast Iteration:** Use the development mode to get quick feedback.
-- **Request Caching:** Re-run scripts on websites you already scraped.
-- **Zero Dependencies:** No need to fill up your disk with npm packages.
+- **Tons of features:** 20 features to configure the scraping behavior.
+- **Browser Mode:** Render JavaScript heavy pages using a headless Browser.
 
 ## Overview
 
@@ -60,8 +58,16 @@ export const config = {
         "https://news.ycombinator.com/show",
         "https://news.ycombinator.com/ask",
     ],
-    depth: 5,
+
+    // Cache request for later.
     cache: "file",
+
+    // Enable JavaScript rendering.
+    browser: true,
+    headless: false,
+
+    // Follow pagination 5 times.
+    depth: 5,
     follow: ["a.morelink[href]"],
 }
 
@@ -181,6 +187,12 @@ export const config = {
         "https://yetanother.com/",
     ],
 
+    // Enable rendering with headless browser.             (default = false)
+    browser: true,
+
+    // Specify if browser should be headless or not.       (default = true)
+    headless: false,
+
     // Specify how deep links should be followed.          (default = 0, no follow)
     depth: 5,                        
 
@@ -206,9 +218,11 @@ export const config = {
     concurrency: 1,                       
 
     // Specify a single HTTP(S) proxy URL.                 (default = no proxy)
+    // Note: Not compatible with browser mode.
     proxy: "http://someproxy.com:8043",
 
     // Specify multiple HTTP(S) proxy URLs.                (default = no proxy)
+    // Note: Not compatible with browser mode.
     proxies: [
       "http://someproxy.com:8043",
       "http://someotherproxy.com:8043",
@@ -286,35 +300,6 @@ import { parse } from "flyscrape";
 
 const doc = parse(`<div class="foo">bar</div>`);
 const text = doc.find(".foo").text();
-```
-
-### Basic HTTP Requests
-
-```javascript
-import http from "flyscrape/http";
-
-const response = http.get("https://example.com")
-
-const response = http.postForm("https://example.com", {
-    "username": "foo",
-    "password": "bar",
-})
-
-const response = http.postJSON("https://example.com", {
-    "username": "foo",
-    "password": "bar",
-})
-
-// Contents of response
-{
-    body: "<html>...</html>",
-    status: 200,
-    headers: {
-        "Content-Type": "text/html",
-        // ...
-    },
-    error": "",
-}
 ```
 
 ### File Downloads

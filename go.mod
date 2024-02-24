@@ -10,6 +10,7 @@ require (
 	github.com/dop251/goja_nodejs v0.0.0-20230914102007-198ba9a8b098
 	github.com/evanw/esbuild v0.18.14
 	github.com/fsnotify/fsnotify v1.6.0
+	github.com/go-rod/rod v0.114.7
 	github.com/inancgumus/screen v0.0.0-20190314163918-06e984b86ed3
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/nlnwa/whatwg-url v0.4.0
@@ -40,6 +41,11 @@ require (
 	github.com/tidwall/gjson v1.17.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/ysmood/fetchup v0.2.3 // indirect
+	github.com/ysmood/goob v0.4.0 // indirect
+	github.com/ysmood/got v0.34.1 // indirect
+	github.com/ysmood/gson v0.7.3 // indirect
+	github.com/ysmood/leakless v0.8.0 // indirect
 	github.com/zalando/go-keyring v0.2.3 // indirect
 	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/net v0.21.0 // indirect

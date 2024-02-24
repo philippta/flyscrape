@@ -17,8 +17,9 @@ func init() {
 }
 
 type Module struct {
-	Rate        int `json:"rate"`
-	Concurrency int `json:"concurrency"`
+	Rate        int  `json:"rate"`
+	Concurrency int  `json:"concurrency"`
+	Browser     bool `json:"browser"`
 
 	ticker      *time.Ticker
 	ratelimit   chan struct{}
@@ -44,6 +45,10 @@ func (m *Module) Provision(v flyscrape.Context) {
 				m.ratelimit <- struct{}{}
 			}
 		}()
+	}
+
+	if m.browserEnabled() && !m.concurrencyEnabled() {
+		m.Concurrency = 1
 	}
 
 	if m.concurrencyEnabled() {
@@ -81,6 +86,10 @@ func (m *Module) rateLimitEnabled() bool {
 
 func (m *Module) concurrencyEnabled() bool {
 	return m.Concurrency > 0
+}
+
+func (m *Module) browserEnabled() bool {
+	return m.Browser
 }
 
 var (

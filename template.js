@@ -2,6 +2,12 @@ export const config = {
     // Specify the URL to start scraping from.
     url: "https://example.com/",
 
+    // Enable rendering with headless browser.             (default = false)
+    // browser: true,
+
+    // Specify if browser should be headless or not.       (default = true)
+    // headless: false,
+
     // Specify the multiple URLs to start scraping from.   (default = [])
     // urls: [                          
     //     "https://anothersite.com/",
@@ -33,9 +39,11 @@ export const config = {
     // concurrency: 1,                       
 
     // Specify a single HTTP(S) proxy URL.                 (default = no proxy)
+    // Note: Not compatible with browser mode.
     // proxy: "http://someproxy.com:8043",
 
     // Specify multiple HTTP(S) proxy URLs.                (default = no proxy)
+    // Note: Not compatible with browser mode.
     // proxies: [
     //   "http://someproxy.com:8043",
     //   "http://someotherproxy.com:8043",

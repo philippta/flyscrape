@@ -95,6 +95,7 @@ var (
 		// Transport adapters must be loaded in a specific order.
 		// All other modules can be loaded in any order.
 		"proxy",
+		"browser",
 		"retry",
 		"ratelimit",
 		"cache",

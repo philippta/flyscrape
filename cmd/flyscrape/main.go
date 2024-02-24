@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/philippta/flyscrape/cmd"
+	_ "github.com/philippta/flyscrape/modules/browser"
 	_ "github.com/philippta/flyscrape/modules/cache"
 	_ "github.com/philippta/flyscrape/modules/cookies"
 	_ "github.com/philippta/flyscrape/modules/depth"
