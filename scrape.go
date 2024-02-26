@@ -123,7 +123,6 @@ func (s *Scraper) scrape() {
 	for i := 0; i < 500; i++ {
 		go func() {
 			for job := range s.jobs {
-				job := job
 				s.process(job.url, job.depth)
 				s.wg.Done()
 			}
@@ -197,11 +196,19 @@ func (s *Scraper) process(url string, depth int) {
 	}
 
 	if s.ScrapeFunc != nil {
-		response.Data, err = s.ScrapeFunc(ScrapeParams{HTML: string(response.Body), URL: request.URL})
-		if err != nil {
-			response.Error = err
-			return
-		}
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Println(r)
+				}
+			}()
+
+			response.Data, err = s.ScrapeFunc(ScrapeParams{HTML: string(response.Body), URL: request.URL})
+			if err != nil {
+				response.Error = err
+				return
+			}
+		}()
 	}
 }
 

@@ -27,6 +27,8 @@ func init() {
 type Module struct {
 	Browser  bool  `json:"browser"`
 	Headless *bool `json:"headless"`
+
+	browser *rod.Browser
 }
 
 func (Module) ModuleInfo() flyscrape.ModuleInfo {
@@ -36,7 +38,7 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 	}
 }
 
-func (m Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
+func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 	if !m.Browser {
 		return t
 	}
@@ -46,16 +48,24 @@ func (m Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 		headless = *m.Headless
 	}
 
-	ct, err := chromeTransport(headless)
+	browser, err := newBrowser(headless)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
 
-	return ct
+	m.browser = browser
+
+	return chromeTransport(browser)
 }
 
-func chromeTransport(headless bool) (flyscrape.RoundTripFunc, error) {
+func (m *Module) Finalize() {
+	if m.browser != nil {
+		m.browser.Close()
+	}
+}
+
+func newBrowser(headless bool) (*rod.Browser, error) {
 	serviceURL, err := launcher.New().
 		Headless(headless).
 		Launch()
@@ -68,6 +78,10 @@ func chromeTransport(headless bool) (flyscrape.RoundTripFunc, error) {
 		return nil, fmt.Errorf("failed to connect to browser: %w", err)
 	}
 
+	return browser, nil
+}
+
+func chromeTransport(browser *rod.Browser) flyscrape.RoundTripFunc {
 	return func(r *http.Request) (*http.Response, error) {
 		select {
 		case <-r.Context().Done():
@@ -92,19 +106,25 @@ func chromeTransport(headless bool) (flyscrape.RoundTripFunc, error) {
 		page = page.Context(r.Context())
 
 		for h := range r.Header {
+			if h == "Cookie" {
+				continue
+			}
 			if h == "User-Agent" && strings.HasPrefix(r.UserAgent(), "flyscrape") {
 				continue
 			}
 			page.MustSetExtraHeaders(h, r.Header.Get(h))
 		}
 
+		page.SetCookies(parseCookies(r))
+
 		if err := page.Navigate(r.URL.String()); err != nil {
 			return nil, err
 		}
 
-		if err := page.WaitStable(time.Second); err != nil {
-			return nil, err
-		}
+		timeout := page.Timeout(10 * time.Second)
+		timeout.WaitLoad()
+		timeout.WaitDOMStable(300*time.Millisecond, 0)
+		timeout.WaitRequestIdle(time.Second, nil, nil, nil)
 
 		html, err := page.HTML()
 		if err != nil {
@@ -129,7 +149,45 @@ func chromeTransport(headless bool) (flyscrape.RoundTripFunc, error) {
 		}
 
 		return resp, err
-	}, nil
+	}
 }
 
-var _ flyscrape.TransportAdapter = Module{}
+func parseCookies(r *http.Request) []*proto.NetworkCookieParam {
+	rawCookie := r.Header.Get("Cookie")
+	if rawCookie == "" {
+		return nil
+	}
+
+	header := http.Header{}
+	header.Add("Cookie", rawCookie)
+	request := http.Request{Header: header}
+
+	domainSegs := strings.Split(r.URL.Hostname(), ".")
+	if len(domainSegs) < 2 {
+		return nil
+	}
+
+	domain := "." + strings.Join(domainSegs[len(domainSegs)-2:], ".")
+
+	var cookies []*proto.NetworkCookieParam
+	for _, cookie := range request.Cookies() {
+		cookies = append(cookies, &proto.NetworkCookieParam{
+			Name:     cookie.Name,
+			Value:    cookie.Value,
+			Domain:   domain,
+			Path:     "/",
+			Secure:   false,
+			HTTPOnly: false,
+			SameSite: "Lax",
+			Expires:  -1,
+			URL:      r.URL.String(),
+		})
+	}
+
+	return cookies
+}
+
+var (
+	_ flyscrape.TransportAdapter = &Module{}
+	_ flyscrape.Finalizer        = &Module{}
+)

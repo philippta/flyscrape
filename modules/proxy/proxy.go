@@ -62,5 +62,5 @@ func (m *Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 }
 
 func (m *Module) disabled() bool {
-	return len(m.Proxies) == 0
+	return len(m.Proxies) == 0 && m.Proxy == ""
 }
