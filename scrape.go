@@ -96,7 +96,7 @@ func (s *Scraper) Run() {
 		}
 	}
 
-	go s.scrape()
+	s.scrape()
 	s.wg.Wait()
 	close(s.jobs)
 

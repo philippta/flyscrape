@@ -6,6 +6,7 @@ package starturl_test
 
 import (
 	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/philippta/flyscrape"
@@ -100,6 +101,7 @@ func TestStartURL_MultipleStartingURLs(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			urls := []string{}
+			mu := sync.Mutex{}
 
 			mods := []flyscrape.Module{
 				tc.startURLModFn(),
@@ -108,7 +110,9 @@ func TestStartURL_MultipleStartingURLs(t *testing.T) {
 						return flyscrape.MockTransport(http.StatusOK, "")
 					},
 					BuildRequestFn: func(r *flyscrape.Request) {
+						mu.Lock()
 						urls = append(urls, r.URL)
+						mu.Unlock()
 					},
 				},
 			}

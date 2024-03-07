@@ -6,6 +6,7 @@ package ratelimit_test
 
 import (
 	"net/http"
+	"sync"
 	"testing"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 
 func TestRatelimit(t *testing.T) {
 	var times []time.Time
+	var mu sync.Mutex
 
 	mods := []flyscrape.Module{
 		&starturl.Module{URL: "http://www.example.com"},
@@ -28,7 +30,9 @@ func TestRatelimit(t *testing.T) {
 				return flyscrape.MockTransport(200, `<a href="foo">foo</a>`)
 			},
 			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
 				times = append(times, time.Now())
+				mu.Unlock()
 			},
 		},
 		&ratelimit.Module{
@@ -53,6 +57,7 @@ func TestRatelimit(t *testing.T) {
 
 func TestRatelimitConcurrency(t *testing.T) {
 	var times []time.Time
+	var mu sync.Mutex
 
 	mods := []flyscrape.Module{
 		&starturl.Module{URL: "http://www.example.com"},
@@ -60,7 +65,10 @@ func TestRatelimitConcurrency(t *testing.T) {
 		hook.Module{
 			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
 				return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+					mu.Lock()
 					times = append(times, time.Now())
+					mu.Unlock()
+
 					time.Sleep(10 * time.Millisecond)
 					return flyscrape.MockResponse(200, `
 						<a href="foo"></a>
