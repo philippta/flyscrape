@@ -26,7 +26,7 @@ Flyscrape is a command-line web scraping tool designed for those without <br />a
 ## Demo
 
 
-<a href="https://www.youtube.com/watch?v=Yj11v4n9JHA">
+<a href="https://www.youtube.com/watch?v=eGk8qFZ9oM4">
   <img src=".github/assets/flyscrape-demo.jpg" style="border-radius: 6px">
 </a>
 
