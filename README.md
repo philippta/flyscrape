@@ -181,7 +181,7 @@ Examples:
 
 ## Configuration
 
-Below is an example scraping script that showcases the capabilities of flyscrape. For a full documentation of all configuration options, visit the [documentation page](docs/readme.md#configuration).
+Below is an example scraping script that showcases the capabilities of flyscrape. For a full documentation of all configuration options, visit the [documentation page](https://flyscrape.com/docs/getting-started/).
 
 ```javascript
 export const config = {
