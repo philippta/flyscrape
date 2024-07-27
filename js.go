@@ -164,7 +164,7 @@ func scrape(vm *goja.Runtime) (ScrapeFunc, error) {
 
 	scrapefn, ok := defaultfn.Export().(func(goja.FunctionCall) goja.Value)
 	if !ok {
-		return nil, errors.New("failed to export scrape funtion")
+		return nil, errors.New("failed to export scrape function")
 	}
 
 	return func(p ScrapeParams) (any, error) {
