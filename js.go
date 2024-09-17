@@ -225,6 +225,7 @@ func Document(sel *goquery.Selection) map[string]any {
 	o := map[string]any{}
 	o["WARNING"] = "Forgot to call text(), html() or attr()?"
 	o["text"] = sel.Text
+	o["name"] = func() string { return sel.Get(0).Data }
 	o["html"] = func() string { h, _ := goquery.OuterHtml(sel); return h }
 	o["attr"] = func(name string) string { v, _ := sel.Attr(name); return v }
 	o["hasAttr"] = func(name string) bool { _, ok := sel.Attr(name); return ok }
@@ -235,7 +236,11 @@ func Document(sel *goquery.Selection) map[string]any {
 	o["get"] = func(index int) map[string]any { return Document(sel.Eq(index)) }
 	o["find"] = func(s string) map[string]any { return Document(sel.Find(s)) }
 	o["next"] = func() map[string]any { return Document(sel.Next()) }
+	o["nextAll"] = func() map[string]any { return Document(sel.NextAll()) }
+	o["nextUntil"] = func(s string) map[string]any { return Document(sel.NextUntil(s)) }
 	o["prev"] = func() map[string]any { return Document(sel.Prev()) }
+	o["prevAll"] = func() map[string]any { return Document(sel.PrevAll()) }
+	o["prevUntil"] = func(s string) map[string]any { return Document(sel.PrevUntil(s)) }
 	o["siblings"] = func() map[string]any { return Document(sel.Siblings()) }
 	o["children"] = func() map[string]any { return Document(sel.Children()) }
 	o["parent"] = func() map[string]any { return Document(sel.Parent()) }

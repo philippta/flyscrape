@@ -273,6 +273,7 @@ export default function ({ doc, url, absoluteURL }) {
 const el = doc.find(".element")
 el.text()                                 // "Hey"
 el.html()                                 // `<div class="element">Hey</div>`
+el.name()                                 // div
 el.attr("foo")                            // "bar"
 el.hasAttr("foo")                         // true
 el.hasClass("element")                    // true
@@ -296,6 +297,23 @@ items.get(1).parent()                     // <ul>...</ul>
 items.get(1).siblings()                   // [<li class="a">Item 1</li>, <li>Item 2</li>, <li>Item 3</li>]
 items.map(item => item.text())            // ["Item 1", "Item 2", "Item 3"]
 items.filter(item => item.hasClass("a"))  // [<li class="a">Item 1</li>]
+
+// <div>
+//   <h2 id="aleph">Aleph</h2>
+//   <p>Aleph</p>
+//   <h2 id="beta">Beta</h2>
+//   <p>Beta</p>
+//   <h2 id="gamma">Gamma</h2>
+//   <p>Gamma</p>
+// </div>
+const header = doc.find("div h2")
+
+header.get(1).prev()                     // <p>Aleph</p>
+header.get(1).prevAll()                  // [<p>Aleph</p>, <h2 id="aleph">Aleph</h2>]
+header.get(1).prevUntil('div,h1,h2,h3')  // <h2 id="aleph">Aleph</h2>
+header.get(1).next()                     // <p>Beta</p>
+header.get(1).nextAll()                  // [<p>Beta</p>, <h2 id="gamma">Gamma</h2>, <p>Gamma</p>]
+header.get(1).nextUntil('div,h1,h2,h3')  // <p>Beta</p>
 ```
 
 ## Flyscrape API
