@@ -134,7 +134,7 @@ func (s *Scraper) process(url string, depth int) {
 	request := &Request{
 		Method:  http.MethodGet,
 		URL:     url,
-		Headers: defaultHeaders(),
+		Headers: http.Header{},
 		Cookies: s.Client.Jar,
 		Depth:   depth,
 	}
@@ -230,11 +230,4 @@ func (s *Scraper) enqueueJob(url string, depth int) {
 		log.Println("queue is full, can't add url:", url)
 		s.wg.Done()
 	}
-}
-
-func defaultHeaders() http.Header {
-	h := http.Header{}
-	h.Set("User-Agent", "flyscrape/0.1")
-
-	return h
 }

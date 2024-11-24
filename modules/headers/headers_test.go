@@ -5,9 +5,8 @@
 package headers_test
 
 import (
-	"fmt"
 	"net/http"
-	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/philippta/flyscrape"
@@ -18,77 +17,55 @@ import (
 )
 
 func TestHeaders(t *testing.T) {
-	testCases := []struct {
-		name        string
-		headersFn   func() headers.Module
-		wantHeaders map[string][]string
-	}{
-		{
-			name: "empty custom headers",
-			headersFn: func() headers.Module {
-				return headers.Module{
-					Headers: map[string]string{},
-				}
-			},
-			wantHeaders: map[string][]string{"User-Agent": {"flyscrape/0.1"}},
-		},
-		{
-			name: "no duplicate headers between default and custom",
-			headersFn: func() headers.Module {
-				return headers.Module{
-					Headers: map[string]string{
-						"Authorization": "Basic ZGVtbzpwQDU1dzByZA==",
-					},
-				}
-			},
-			wantHeaders: map[string][]string{
-				"Authorization": {"Basic ZGVtbzpwQDU1dzByZA=="},
-				"User-Agent":    {"flyscrape/0.1"},
+	gotHeaders := map[string]string{}
+	sentHeaders := map[string]string{
+		"Authorization": "Basic ZGVtbzpwQDU1dzByZA==",
+		"User-Agent":    "Gecko/1.0",
+	}
+
+	mods := []flyscrape.Module{
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+					for k := range r.Header {
+						gotHeaders[k] = r.Header.Get(k)
+					}
+					return flyscrape.MockResponse(200, "")
+				})
 			},
 		},
-		{
-			name: "duplicate headers between default and custom",
-			headersFn: func() headers.Module {
-				return headers.Module{
-					Headers: map[string]string{
-						"Authorization": "Basic ZGVtbzpwQDU1dzByZA==",
-						"User-Agent":    "Gecko/1.0",
-					},
-				}
-			},
-			wantHeaders: map[string][]string{
-				"Authorization": {"Basic ZGVtbzpwQDU1dzByZA=="},
-				"User-Agent":    {"Gecko/1.0"},
-			},
+		&starturl.Module{URL: "http://www.example.com"},
+		&headers.Module{
+			Headers: sentHeaders,
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			var headers map[string][]string
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
+	scraper.Run()
 
-			mods := []flyscrape.Module{
-				&starturl.Module{URL: "http://www.example.com"},
-				hook.Module{
-					AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
-						return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
-							headers = r.Header
-							return rt.RoundTrip(r)
-						})
-					},
-				},
-				tc.headersFn(),
-			}
+	require.Equal(t, sentHeaders, gotHeaders)
+}
 
-			scraper := flyscrape.NewScraper()
-			scraper.Modules = mods
-			scraper.Run()
-
-			require.Truef(
-				t,
-				reflect.DeepEqual(tc.wantHeaders, headers),
-				fmt.Sprintf("expected: %v; actual: %v", tc.wantHeaders, headers),
-			)
-		})
+func TestHeadersRandomUserAgent(t *testing.T) {
+	var userAgent string
+	mods := []flyscrape.Module{
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+					userAgent = r.Header.Get("User-Agent")
+					return flyscrape.MockResponse(200, "")
+				})
+			},
+		},
+		&starturl.Module{URL: "http://www.example.com"},
+		&headers.Module{},
 	}
+
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
+	scraper.Run()
+
+	require.NotEmpty(t, userAgent)
+	require.True(t, strings.HasPrefix(userAgent, "Mozilla/5.0 ("))
 }
