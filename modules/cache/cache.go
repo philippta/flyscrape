@@ -34,15 +34,12 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 
 func (m *Module) Provision(ctx flyscrape.Context) {
 	switch {
-	case m.Cache == "memory":
-		m.store = NewMemStore()
-
 	case m.Cache == "file":
 		file := replaceExt(ctx.ScriptName(), ".cache")
-		m.store = NewSQLiteStore(file)
+		m.store = NewBoltStore(file)
 
 	case strings.HasPrefix(m.Cache, "file:"):
-		m.store = NewSQLiteStore(strings.TrimPrefix(m.Cache, "file:"))
+		m.store = NewBoltStore(strings.TrimPrefix(m.Cache, "file:"))
 	}
 }
 

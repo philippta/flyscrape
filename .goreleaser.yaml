@@ -4,118 +4,22 @@ before:
     - go test ./...
 
 builds:
-  # Linux amd64
-  - id: linux-amd64
+  - id: flyscrape
     main: ./cmd/flyscrape
     env:
-      - CGO_ENABLED=1
-      - CC=x86_64-linux-gnu-gcc
-      - CXX=x86_64-linux-gnu-g++
+      - CGO_ENABLED=0
     ldflags:
       - -s -w
+      - -extldflags "-static"
       - -X github.com/philippta/flyscrape.Version={{.Tag}}
     flags:
       - -mod=readonly
     tags:
       - osusergo
       - netgo
-      - sqlite_omit_load_extension
-    goos:
-      - linux
-    goarch:
-      - amd64
-
-  # Linux arm64
-  - id: linux-arm64
-    main: ./cmd/flyscrape
-    env:
-      - CGO_ENABLED=1
-      - CC=aarch64-linux-gnu-gcc
-      - CXX=aarch64-linux-gnu-g++
-    ldflags:
-      - -s -w
-      - -X github.com/philippta/flyscrape.Version={{.Tag}}
-    flags:
-      - -mod=readonly
-    tags:
-      - osusergo
-      - netgo
-      - sqlite_omit_load_extension
-    goos:
-      - linux
-    goarch:
-      - arm64
-    goarm:
-      - 7
-
-  # MacOS amd64
-  - id: macos-amd64
-    main: ./cmd/flyscrape
-    env:
-      - CGO_ENABLED=1
-      - CC=o64-clang
-      - CXX=o64-clang++
-    ldflags:
-      - -s -w
-      - -X github.com/philippta/flyscrape.Version={{.Tag}}
-    flags:
-      - -mod=readonly
-    tags:
-      - osusergo
-      - netgo
-      - sqlite_omit_load_extension
-    goos:
-      - darwin
-    goarch:
-      - amd64
-
-  # MacOS arm64
-  - id: macos-arm64
-    main: ./cmd/flyscrape
-    env:
-      - CGO_ENABLED=1
-      - CC=oa64-clang
-      - CXX=oa64-clang++
-    ldflags:
-      - -s -w
-      - -X github.com/philippta/flyscrape.Version={{.Tag}}
-    flags:
-      - -mod=readonly
-    tags:
-      - osusergo
-      - netgo
-      - sqlite_omit_load_extension
-    goos:
-      - darwin
-    goarch:
-      - arm64
-
-  # Window amd64
-  - id: windows-amd64
-    main: ./cmd/flyscrape
-    env:
-      - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
-    ldflags:
-      - -s -w
-    flags:
-      - -mod=readonly
-    tags:
-      - osusergo
-      - netgo
-      - sqlite_omit_load_extension
-    goos:
-      - windows
-    goarch:
-      - amd64
 
 archives:
   - format: tar.gz
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- if eq .Os "darwin" }}macos{{else}}{{ .Os }}{{ end }}_
-      {{- .Arch }}
     format_overrides:
       - goos: windows
         format: zip

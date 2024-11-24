@@ -12,12 +12,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSQLiteStore(t *testing.T) {
-	dir, err := os.MkdirTemp("", "sqlitestore")
+func TestBoltStore(t *testing.T) {
+	dir, err := os.MkdirTemp("", "boltstore")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	store := cache.NewSQLiteStore(dir + "/test.db")
+	store := cache.NewBoltStore(dir + "/test.db")
 
 	v, ok := store.Get("foo")
 	require.Nil(t, v)

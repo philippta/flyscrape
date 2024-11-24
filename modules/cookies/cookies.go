@@ -51,10 +51,6 @@ func (m Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
 	return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
 		for _, store := range stores {
 			for _, cookie := range store.Cookies(r.URL) {
-				// Unquote cookie value
-				if len(cookie.Value) >= 2 && cookie.Value[0] == '"' && cookie.Value[len(cookie.Value)-1] == '"' {
-					cookie.Value = cookie.Value[1 : len(cookie.Value)-2]
-				}
 				r.AddCookie(cookie)
 			}
 		}
