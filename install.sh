@@ -15,10 +15,10 @@ echo "Installing flyscrape"
 
 case $(uname -ms) in
 'Darwin x86_64')
-    target=macos_amd64
+    target=darwin_amd64
     ;;
 'Darwin arm64')
-    target=macos_arm64
+    target=darwin_arm64
     ;;
 'Linux aarch64' | 'Linux arm64')
     target=linux_arm64
@@ -35,7 +35,7 @@ mkdir -p "$dir" ||
 
 
 archive="$dir/flyscrape_$target.tar.gz"
-url="https://github.com/philippta/flyscrape/releases/latest/download/flyscrape_$target.tar.gz"
+url="https://github.com/philippta/flyscrape/releases/latest/download/flyscrape_0.9.0_$target.tar.gz"
 curl --fail --location --progress-bar --output "$archive" "$url" ||
     error "Failed to download flyscrape from: $url"
 
