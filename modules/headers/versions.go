@@ -18,31 +18,31 @@ import (
 
 //go:embed versions_chrome.txt
 var versionsChromeRaw string
-var versionsChrome = strings.Split("\n", strings.TrimSpace(versionsChromeRaw))
+var versionsChrome = strings.Split(strings.TrimSpace(versionsChromeRaw), "\n")
 
 //go:embed versions_firefox.txt
 var versionsFirefoxRaw string
-var versionsFirefox = strings.Split("\n", strings.TrimSpace(versionsFirefoxRaw))
+var versionsFirefox = strings.Split(strings.TrimSpace(versionsFirefoxRaw), "\n")
 
 //go:embed versions_edge.txt
 var versionsEdgeRaw string
-var versionsEdge = strings.Split("\n", strings.TrimSpace(versionsEdgeRaw))
+var versionsEdge = strings.Split(strings.TrimSpace(versionsEdgeRaw), "\n")
 
 //go:embed versions_opera.txt
 var versionsOperaRaw string
-var versionsOpera = strings.Split("\n", strings.TrimSpace(versionsOperaRaw))
+var versionsOpera = strings.Split(strings.TrimSpace(versionsOperaRaw), "\n")
 
 //go:embed versions_macos.txt
 var versionsMacOSRaw string
-var versionsMacOS = strings.Split("\n", strings.TrimSpace(versionsMacOSRaw))
+var versionsMacOS = strings.Split(strings.TrimSpace(versionsMacOSRaw), "\n")
 
 //go:embed versions_windows.txt
 var versionsWindowsRaw string
-var versionsWindows = strings.Split("\n", strings.TrimSpace(versionsWindowsRaw))
+var versionsWindows = strings.Split(strings.TrimSpace(versionsWindowsRaw), "\n")
 
 //go:embed versions_linux.txt
 var versionsLinuxRaw string
-var versionsLinux = strings.Split("\n", strings.TrimSpace(versionsLinuxRaw))
+var versionsLinux = strings.Split(strings.TrimSpace(versionsLinuxRaw), "\n")
 
 func randomUAChrome() string {
 	f := "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36"
@@ -61,7 +61,7 @@ func randomUAEdge() string {
 }
 
 func randomUAOpera() string {
-	f := "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 OPR/"
+	f := "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 OPR/%s"
 	return fmt.Sprintf(f, randomOS(), random(versionsOpera))
 }
 
