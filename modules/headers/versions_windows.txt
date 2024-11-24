@@ -1,0 +1,2 @@
+Windows NT 10.0; Win64; x64
+Windows NT 10.0; WOW64

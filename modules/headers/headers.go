@@ -26,13 +26,13 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 }
 
 func (m Module) AdaptTransport(t http.RoundTripper) http.RoundTripper {
-	if len(m.Headers) == 0 {
-		return t
-	}
-
 	return flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
 		for k, v := range m.Headers {
 			r.Header.Set(k, v)
+		}
+
+		if r.Header.Get("User-Agent") == "" {
+			r.Header.Set("User-Agent", randomUserAgent())
 		}
 
 		return t.RoundTrip(r)
