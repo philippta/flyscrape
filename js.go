@@ -27,8 +27,9 @@ var ScriptTemplate []byte
 type Config []byte
 
 type ScrapeParams struct {
-	HTML string
-	URL  string
+	HTML    string
+	URL     string
+	Process func(url string) ([]byte, error)
 }
 
 type ScrapeFunc func(ScrapeParams) (any, error)
@@ -167,26 +168,21 @@ func scrape(vm *goja.Runtime) (ScrapeFunc, error) {
 		return nil, errors.New("failed to export scrape function")
 	}
 
-	return func(p ScrapeParams) (any, error) {
-		lock.Lock()
-		defer lock.Unlock()
-
+	var newArg func(p ScrapeParams) (*goja.Object, error)
+	newArg = func(p ScrapeParams) (*goja.Object, error) {
 		doc, err := DocumentFromString(p.HTML)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 
 		baseurl, err := url.Parse(p.URL)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 
 		absoluteURL := func(ref string) string {
 			abs, err := baseurl.Parse(ref)
 			if err != nil {
-				log.Println(err)
 				return ref
 			}
 			return abs.String()
@@ -196,8 +192,41 @@ func scrape(vm *goja.Runtime) (ScrapeFunc, error) {
 		o.Set("url", p.URL)
 		o.Set("doc", doc)
 		o.Set("absoluteURL", absoluteURL)
+		o.Set("scrape", func(url string, f func(goja.FunctionCall) goja.Value) goja.Value {
+			url = absoluteURL(url)
 
-		ret := scrapefn(goja.FunctionCall{Arguments: []goja.Value{o}})
+			html, err := p.Process(url)
+			if err != nil {
+				return vm.ToValue(map[string]any{"error": err.Error()})
+			}
+
+			newp := ScrapeParams{
+				HTML:    string(html),
+				URL:     url,
+				Process: p.Process,
+			}
+
+			arg, err := newArg(newp)
+			if err != nil {
+				return vm.ToValue(map[string]any{"error": err.Error()})
+			}
+
+			return f(goja.FunctionCall{Arguments: []goja.Value{arg}})
+		})
+
+		return o, nil
+	}
+
+	return func(p ScrapeParams) (any, error) {
+		lock.Lock()
+		defer lock.Unlock()
+
+		arg, err := newArg(p)
+		if err != nil {
+			return nil, err
+		}
+
+		ret := scrapefn(goja.FunctionCall{Arguments: []goja.Value{arg}})
 		if goja.IsUndefined(ret) {
 			return nil, nil
 		}
