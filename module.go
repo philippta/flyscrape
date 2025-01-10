@@ -63,6 +63,9 @@ func LoadModules(cfg Config) []Module {
 
 	// load standard modules in order
 	for _, id := range moduleOrder {
+		if _, ok := loaded[id]; ok {
+			continue
+		}
 		mod := modules[id].ModuleInfo().New()
 		if err := json.Unmarshal(cfg, mod); err != nil {
 			panic("failed to decode config: " + err.Error())

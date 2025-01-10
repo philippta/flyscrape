@@ -37,6 +37,7 @@ Flyscrape is a command-line web scraping tool designed for those without <br />a
 - **Scriptable:** Use JavaScript to write your data extraction logic.
 - **System Cookies:** Give Flyscrape access to your browsers cookie store.
 - **Browser Mode:** Render JavaScript heavy pages using a headless Browser.
+- **Nested Scraping:** Extract data from linked pages within a single scrape.
 
 ## Overview
 
@@ -259,10 +260,20 @@ export const config = {
     },
 };
 
-export default function ({ doc, url, absoluteURL }) {
-    // doc              - Contains the parsed HTML document
-    // url              - Contains the scraped URL
-    // absoluteURL(...) - Transforms relative URLs into absolute URLs
+export default function ({ doc, url, absoluteURL, scrape }) {
+    // doc
+    // Contains the parsed HTML document.
+
+    // url
+    // Contains the scraped URL.
+
+    // absoluteURL("/foo")
+    // Transforms a relative URL into absolute URL.
+
+    // scrape(url, function({ doc, url, absoluteURL, scrape }) {
+    //     return { ... };
+    // })
+    // Scrapes a linked page and returns the scrape result.
 }
 ```
 

@@ -203,13 +203,65 @@ func (s *Scraper) process(url string, depth int) {
 				}
 			}()
 
-			response.Data, err = s.ScrapeFunc(ScrapeParams{HTML: string(response.Body), URL: request.URL})
+			p := ScrapeParams{
+				HTML:    string(response.Body),
+				URL:     request.URL,
+				Process: s.processImmediate,
+			}
+
+			response.Data, err = s.ScrapeFunc(p)
 			if err != nil {
 				response.Error = err
 				return
 			}
 		}()
 	}
+}
+
+func (s *Scraper) processImmediate(url string) ([]byte, error) {
+	request := &Request{
+		Method:  http.MethodGet,
+		URL:     url,
+		Headers: http.Header{},
+		Cookies: s.Client.Jar,
+	}
+
+	for _, mod := range s.Modules {
+		if v, ok := mod.(RequestBuilder); ok {
+			v.BuildRequest(request)
+		}
+	}
+
+	req, err := http.NewRequest(request.Method, request.URL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = request.Headers
+
+	for _, mod := range s.Modules {
+		if v, ok := mod.(RequestValidator); ok {
+			if !v.ValidateRequest(request) {
+				return nil, nil
+			}
+		}
+	}
+
+	resp, err := s.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("%d %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }
 
 func (s *Scraper) enqueueJob(url string, depth int) {

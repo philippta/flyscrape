@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"sync/atomic"
 	"testing"
 
 	"github.com/philippta/flyscrape"
@@ -203,10 +204,10 @@ func TestJSLibHTTPDownload(t *testing.T) {
     http.download("https://example.com/404.txt");
     `
 
-	nreqs := 0
+	var nreqs atomic.Int32
 	client := &http.Client{
 		Transport: flyscrape.RoundTripFunc(func(r *http.Request) (*http.Response, error) {
-			nreqs++
+			nreqs.Add(1)
 
 			if r.URL.Path == "/content-disposition" {
 				resp, err := flyscrape.MockResponse(200, "hello world")
@@ -233,7 +234,7 @@ func TestJSLibHTTPDownload(t *testing.T) {
 
 	wait()
 
-	require.Equal(t, nreqs, 8)
+	require.Equal(t, nreqs.Load(), int32(8))
 	require.FileExists(t, "foo.txt")
 	require.FileExists(t, "dir/my-foo.txt")
 	require.FileExists(t, "dir/bar.txt")

@@ -168,6 +168,98 @@ func TestJSScrapeNaN(t *testing.T) {
 	require.Nil(t, result)
 }
 
+func TestJSScrapeParamURL(t *testing.T) {
+	js := `
+    export default function({ url }) {
+        return url;
+    }
+    `
+	exports, err := flyscrape.Compile(js, nil)
+	require.NoError(t, err)
+
+	result, err := exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+	})
+	require.NoError(t, err)
+	require.Equal(t, "http://localhost/", result)
+}
+
+func TestJSScrapeParamAbsoluteURL(t *testing.T) {
+	js := `
+    export default function({ absoluteURL }) {
+        return absoluteURL("/foo");
+    }
+    `
+	exports, err := flyscrape.Compile(js, nil)
+	require.NoError(t, err)
+
+	result, err := exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+	})
+	require.NoError(t, err)
+	require.Equal(t, "http://localhost/foo", result)
+}
+
+func TestJSScrapeParamScrape(t *testing.T) {
+	js := `
+    export default function({ scrape }) {
+        return scrape("/foo", function({ url }) {
+		return {
+			url: url,
+			foo: "bar",
+		};
+	});
+    }
+    `
+	exports, err := flyscrape.Compile(js, nil)
+	require.NoError(t, err)
+
+	result, err := exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+		Process: func(url string) ([]byte, error) {
+			return nil, nil
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, map[string]any{
+		"url": "http://localhost/foo",
+		"foo": "bar",
+	}, result)
+}
+
+func TestJSScrapeParamScrapeDeep(t *testing.T) {
+	js := `
+    export default function({ scrape }) {
+        return scrape("/foo/", function({ url, scrape }) {
+		return {
+			url: url,
+			deep: scrape("bar", function({ url }) {
+				return url;
+			}),
+		};
+	});
+    }
+    `
+	exports, err := flyscrape.Compile(js, nil)
+	require.NoError(t, err)
+
+	result, err := exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+		Process: func(url string) ([]byte, error) {
+			return nil, nil
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, map[string]any{
+		"url":  "http://localhost/foo/",
+		"deep": "http://localhost/foo/bar",
+	}, result)
+}
+
 func TestJSCompileError(t *testing.T) {
 	exports, err := flyscrape.Compile("import foo;", nil)
 	require.Error(t, err)
