@@ -207,6 +207,9 @@ func (s *Scraper) process(url string, depth int) {
 				HTML:    string(response.Body),
 				URL:     request.URL,
 				Process: s.processImmediate,
+				Follow: func(url string) {
+					s.enqueueJob(url, depth+1)
+				},
 			}
 
 			response.Data, err = s.ScrapeFunc(p)
