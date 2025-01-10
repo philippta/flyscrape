@@ -57,7 +57,7 @@ func TestFollowSelector(t *testing.T) {
 	mods := []flyscrape.Module{
 		&starturl.Module{URL: "http://www.example.com/foo/bar"},
 		&followlinks.Module{
-			Follow: []string{".next a[href]"},
+			Follow: &[]string{".next a[href]"},
 		},
 		hook.Module{
 			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
@@ -92,7 +92,7 @@ func TestFollowDataAttr(t *testing.T) {
 	mods := []flyscrape.Module{
 		&starturl.Module{URL: "http://www.example.com/foo/bar"},
 		&followlinks.Module{
-			Follow: []string{"[data-url]"},
+			Follow: &[]string{"[data-url]"},
 		},
 		hook.Module{
 			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
@@ -125,7 +125,7 @@ func TestFollowMultiple(t *testing.T) {
 	mods := []flyscrape.Module{
 		&starturl.Module{URL: "http://www.example.com/foo/bar"},
 		&followlinks.Module{
-			Follow: []string{"a.prev", "a.next"},
+			Follow: &[]string{"a.prev", "a.next"},
 		},
 		hook.Module{
 			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
@@ -150,4 +150,38 @@ func TestFollowMultiple(t *testing.T) {
 	require.Contains(t, urls, "http://www.example.com/foo/bar")
 	require.Contains(t, urls, "http://www.example.com/foo/a")
 	require.Contains(t, urls, "http://www.example.com/foo/b")
+}
+
+func TestFollowNoFollow(t *testing.T) {
+	var urls []string
+	var mu sync.Mutex
+
+	mods := []flyscrape.Module{
+		&starturl.Module{URL: "http://www.example.com/foo/bar"},
+		&followlinks.Module{
+			Follow: &[]string{},
+		},
+		hook.Module{
+			AdaptTransportFn: func(rt http.RoundTripper) http.RoundTripper {
+				return flyscrape.MockTransport(200, `
+				<a href="/baz">Baz</a>
+				<a href="baz">Baz</a>
+                <div class="next">
+				    <a href="http://www.google.com">Google</a>
+                </div>`)
+			},
+			ReceiveResponseFn: func(r *flyscrape.Response) {
+				mu.Lock()
+				urls = append(urls, r.Request.URL)
+				mu.Unlock()
+			},
+		},
+	}
+
+	scraper := flyscrape.NewScraper()
+	scraper.Modules = mods
+	scraper.Run()
+
+	require.Len(t, urls, 1)
+	require.Contains(t, urls, "http://www.example.com/foo/bar")
 }

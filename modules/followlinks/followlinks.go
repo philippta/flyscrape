@@ -18,7 +18,7 @@ func init() {
 }
 
 type Module struct {
-	Follow []string `json:"follow"`
+	Follow *[]string `json:"follow"`
 }
 
 func (Module) ModuleInfo() flyscrape.ModuleInfo {
@@ -29,18 +29,26 @@ func (Module) ModuleInfo() flyscrape.ModuleInfo {
 }
 
 func (m *Module) Provision(ctx flyscrape.Context) {
-	if len(m.Follow) == 0 {
-		m.Follow = []string{"a[href]"}
+	if m.Follow == nil {
+		m.Follow = &[]string{"a[href]"}
 	}
 }
 
 func (m *Module) ReceiveResponse(resp *flyscrape.Response) {
+	if m.Follow == nil {
+		return
+	}
+
 	for _, link := range m.parseLinks(string(resp.Body), resp.Request.URL) {
 		resp.Visit(link)
 	}
 }
 
 func (m *Module) parseLinks(html string, origin string) []string {
+	if m.Follow == nil {
+		return nil
+	}
+
 	var links []string
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
@@ -54,7 +62,7 @@ func (m *Module) parseLinks(html string, origin string) []string {
 
 	uniqueLinks := make(map[string]bool)
 
-	for _, selector := range m.Follow {
+	for _, selector := range *m.Follow {
 		attr := parseSelectorAttr(selector)
 		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
 			link, _ := s.Attr(attr)

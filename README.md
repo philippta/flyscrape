@@ -204,7 +204,9 @@ export const config = {
     // Specify how deep links should be followed.          (default = 0, no follow)
     depth: 5,                        
 
-    // Speficy the css selectors to follow.                (default = ["a[href]"])
+    // Specify the css selectors to follow.                (default = ["a[href]"])
+    // Setting follow to [] disables automatic following.
+    // Can later be used with manual following.
     follow: [".next > a", ".related a"],                      
  
     // Specify the allowed domains. ['*'] for all.         (default = domain from url)
@@ -260,7 +262,7 @@ export const config = {
     },
 };
 
-export default function ({ doc, url, absoluteURL, scrape }) {
+export default function ({ doc, url, absoluteURL, scrape, follow }) {
     // doc
     // Contains the parsed HTML document.
 
@@ -274,6 +276,10 @@ export default function ({ doc, url, absoluteURL, scrape }) {
     //     return { ... };
     // })
     // Scrapes a linked page and returns the scrape result.
+
+    // follow("/foo")
+    // Follows a link manually.
+    // Disable automatic following with `follow: []` for best results.
 }
 ```
 

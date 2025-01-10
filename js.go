@@ -30,6 +30,7 @@ type ScrapeParams struct {
 	HTML    string
 	URL     string
 	Process func(url string) ([]byte, error)
+	Follow  func(url string)
 }
 
 type ScrapeFunc func(ScrapeParams) (any, error)
@@ -212,6 +213,9 @@ func scrape(vm *goja.Runtime) (ScrapeFunc, error) {
 			}
 
 			return f(goja.FunctionCall{Arguments: []goja.Value{arg}})
+		})
+		o.Set("follow", func(url string) {
+			p.Follow(absoluteURL(url))
 		})
 
 		return o, nil

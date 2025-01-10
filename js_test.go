@@ -260,6 +260,27 @@ func TestJSScrapeParamScrapeDeep(t *testing.T) {
 	}, result)
 }
 
+func TestJSScrapeParamFollow(t *testing.T) {
+	js := `
+    export default function({ follow }) {
+        follow("/foo")
+    }
+    `
+	exports, err := flyscrape.Compile(js, nil)
+	require.NoError(t, err)
+
+	var followedURL string
+	_, err = exports.Scrape(flyscrape.ScrapeParams{
+		HTML: html,
+		URL:  "http://localhost/",
+		Follow: func(url string) {
+			followedURL = url
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "http://localhost/foo", followedURL)
+}
+
 func TestJSCompileError(t *testing.T) {
 	exports, err := flyscrape.Compile("import foo;", nil)
 	require.Error(t, err)
