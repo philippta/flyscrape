@@ -26,7 +26,7 @@ func (c *DevCommand) Run(args []string) error {
 
 	cfg, err := parseConfigArgs(fs.Args()[1:])
 	if err != nil {
-		return fmt.Errorf("Error parsing config flags: %w", err)
+		return fmt.Errorf("parsing config flags: %w", err)
 	}
 
 	return flyscrape.Dev(fs.Arg(0), cfg)
