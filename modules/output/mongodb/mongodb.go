@@ -22,7 +22,7 @@ import (
 var (
 	DefaultMaxPoolSize   = 100
 	DefaultBatchSize     = 100
-	DefaultFlushInterval = 15 * time.Second
+	DefaultFlushInterval = 10 * time.Second
 	DefaultTimeout       = 30 * time.Second
 	DefaultMaxRetries    = 3
 )
