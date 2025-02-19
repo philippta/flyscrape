@@ -10,7 +10,6 @@ export const config = {
       maxPoolSize: 100,
     },
   },
-  concurrency: 5,
 };
 
 export default function ({ doc }) {
