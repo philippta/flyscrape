@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/philippta/flyscrape/cmd"
+
 	_ "github.com/philippta/flyscrape/modules/browser"
 	_ "github.com/philippta/flyscrape/modules/cache"
 	_ "github.com/philippta/flyscrape/modules/cookies"
@@ -19,6 +20,7 @@ import (
 	_ "github.com/philippta/flyscrape/modules/followlinks"
 	_ "github.com/philippta/flyscrape/modules/headers"
 	_ "github.com/philippta/flyscrape/modules/output/json"
+	_ "github.com/philippta/flyscrape/modules/output/mongodb"
 	_ "github.com/philippta/flyscrape/modules/output/ndjson"
 	_ "github.com/philippta/flyscrape/modules/proxy"
 	_ "github.com/philippta/flyscrape/modules/ratelimit"
