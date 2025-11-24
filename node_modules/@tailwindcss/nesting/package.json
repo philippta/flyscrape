@@ -1,0 +1,39 @@
+{
+  "name": "@tailwindcss/nesting",
+  "version": "0.0.0-insiders.565cd3e",
+  "description": "A light wrapper around any postcss nesting plugin improves compatibility with Tailwind CSS.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest/custom-matchers.js"
+    ]
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "postcss": "^8.2.15"
+  },
+  "dependencies": {
+    "postcss-nested": "^5.0.5"
+  },
+  "devDependencies": {
+    "jest": "^26.6.3",
+    "postcss": "^8.2.15",
+    "prettier": "^2.3.0"
+  }
+}

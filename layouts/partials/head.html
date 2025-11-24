@@ -1,0 +1,60 @@
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  {{ if hugo.IsProduction -}}
+    <meta name="robots" content="index, follow" />
+  {{ else -}}
+    <meta name="robots" content="noindex, nofollow" />
+  {{ end -}}
+  {{ partialCached "favicons.html" . }}
+  <title>
+    {{ with .Title }}{{ . }} – {{ end -}}
+    {{ .Site.Title -}}
+  </title>
+  <meta name="description" content="{{ partial "utils/page-description.html" . }}" />
+  
+  {{ with .Params.canonical }}
+    <link rel="canonical" href="{{ . }}" itemprop="url" />
+  {{ else }}
+    <link rel="canonical" href="{{ .Permalink }}" itemprop="url" />
+  {{ end }}
+
+  {{ partial "opengraph.html" . }}
+  {{ template "_internal/schema.html" . -}}
+  {{ template "_internal/twitter_cards.html" . -}}
+
+  {{ partialCached "head-css.html" . }}
+
+
+  <!-- Google Analytics -->
+  {{- if and (eq hugo.Environment "production") (or .Site.GoogleAnalytics .Site.Config.Services.GoogleAnalytics.ID) }}
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    {{ partial "google-analytics.html" . }}
+  {{- end }}
+
+
+  <script>
+    /* Initialize light/dark mode */
+    const defaultTheme = '{{ site.Params.theme.default | default `system`}}';
+
+    const setDarkTheme = () => {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+    }
+    const setLightTheme = () => {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.style.colorScheme = "light";
+    }
+
+    if ("color-theme" in localStorage) {
+      localStorage.getItem("color-theme") === "dark" ? setDarkTheme() : setLightTheme();
+    } else {
+      defaultTheme === "dark" ? setDarkTheme() : setLightTheme();
+      if (defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? setDarkTheme() : setLightTheme();
+      }
+    }
+  </script>
+
+  {{ partial "custom/head-end.html" . }}
+</head>

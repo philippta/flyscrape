@@ -1,0 +1,29 @@
+{
+  "name": "flyscrape-docs-v2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "hackernews.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "css": "postcss -o assets/css/compiled/main.css assets/css/styles.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/philippta/flyscrape-docs-v2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/philippta/flyscrape-docs-v2/issues"
+  },
+  "homepage": "https://github.com/philippta/flyscrape-docs-v2#readme",
+  "dependencies": {
+    "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
+    "autoprefixer": "^10.4.16",
+    "chroma": "^0.0.1",
+    "postcss-cli": "^10.1.0",
+    "postcss-import": "^15.1.0",
+    "tailwindcss": "^3.3.5"
+  }
+}

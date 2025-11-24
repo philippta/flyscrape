@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="index, follow" />
+  <link rel="icon shortcut" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
+
+  <title>
+    Flyscrape Cloud – Flyscrape</title>
+  <meta name="description" content="Scraping at scale shouldn&#39;t be difficult. Get the data you need without the complexity you don&#39;t.
+Flyscrape Cloud handles the scheduling, processing and infrastructure so you can focus on the data that matters to your business. Get Early Access Focus on scripts, not servers. Write your Flyscrape scripts locally, then upload them to Flyscrape Cloud through our simple interface. We handle all the infrastructure, scaling, and reliability challenges while you focus on extracting the data your business needs Schedule, run, repeat." />
+  
+  
+    <link rel="canonical" href="https://flyscrape.com/cloud/" itemprop="url" />
+  
+
+  
+
+<meta property="og:title" content="Flyscrape Cloud" />
+<meta property="og:description" content="Scraping at scale shouldn&#39;t be difficult. Get the data you need without the complexity you don&#39;t.
+Flyscrape Cloud handles the scheduling, processing and infrastructure so you can focus on the data that matters to your business. Get Early Access Focus on scripts, not servers. Write your Flyscrape scripts locally, then upload them to Flyscrape Cloud through our simple interface. We handle all the infrastructure, scaling, and reliability challenges while you focus on extracting the data your business needs Schedule, run, repeat." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://flyscrape.com/cloud/" /><meta property="article:section" content="" />
+
+
+
+  <meta itemprop="name" content="Flyscrape Cloud">
+<meta itemprop="description" content="Scraping at scale shouldn&#39;t be difficult. Get the data you need without the complexity you don&#39;t.
+Flyscrape Cloud handles the scheduling, processing and infrastructure so you can focus on the data that matters to your business. Get Early Access Focus on scripts, not servers. Write your Flyscrape scripts locally, then upload them to Flyscrape Cloud through our simple interface. We handle all the infrastructure, scaling, and reliability challenges while you focus on extracting the data your business needs Schedule, run, repeat.">
+
+<meta itemprop="wordCount" content="457">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Flyscrape Cloud"/>
+<meta name="twitter:description" content="Scraping at scale shouldn&#39;t be difficult. Get the data you need without the complexity you don&#39;t.
+Flyscrape Cloud handles the scheduling, processing and infrastructure so you can focus on the data that matters to your business. Get Early Access Focus on scripts, not servers. Write your Flyscrape scripts locally, then upload them to Flyscrape Cloud through our simple interface. We handle all the infrastructure, scaling, and reliability challenges while you focus on extracting the data your business needs Schedule, run, repeat."/>
+
+    <link rel="preload" href="/css/compiled/main.min.a8ca7dd455e382034cadeedab59d7db7d30d7a7f69227f7051fcbf853fc8a62a.css" as="style" integrity="sha256-qMp91FXjggNMre7atZ19t9MNen9pIn9wUfy/hT/Ipio=" />
+    <link href="/css/compiled/main.min.a8ca7dd455e382034cadeedab59d7db7d30d7a7f69227f7051fcbf853fc8a62a.css" rel="stylesheet" integrity="sha256-qMp91FXjggNMre7atZ19t9MNen9pIn9wUfy/hT/Ipio=" />
+
+
+
+  <link href="/css/custom.min.fb1d70d39f490c625a3a57f8afe4471a440e267ea4d56244a2524907cb29e9b5.css" rel="stylesheet" integrity="sha256-&#43;x1w059JDGJaOlf4r&#43;RHGkQOJn6k1WJEolJJB8sp6bU=" />
+
+
+
+  
+
+
+  <script>
+     
+    const defaultTheme = 'system';
+
+    const setDarkTheme = () => {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+    }
+    const setLightTheme = () => {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.style.colorScheme = "light";
+    }
+
+    if ("color-theme" in localStorage) {
+      localStorage.getItem("color-theme") === "dark" ? setDarkTheme() : setLightTheme();
+    } else {
+      defaultTheme === "dark" ? setDarkTheme() : setLightTheme();
+      if (defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? setDarkTheme() : setLightTheme();
+      }
+    }
+  </script>
+
+  
+</head>
+<body dir="ltr"><div class="nav-container sticky top-0 z-20 w-full bg-transparent print:hidden">
+  <div class="nav-container-blur pointer-events-none absolute z-[-1] h-full w-full bg-white dark:bg-dark shadow-[0_2px_4px_rgba(0,0,0,.02),0_1px_0_rgba(0,0,0,.06)] contrast-more:shadow-[0_0_0_1px_#000] dark:shadow-[0_-1px_0_rgba(255,255,255,.1)_inset] contrast-more:dark:shadow-[0_0_0_1px_#fff]"></div>
+
+  <nav class="mx-auto flex items-center justify-end h-16 px-6 max-w-[90rem]">
+    <a class="flex items-center hover:opacity-75 ltr:mr-auto rtl:ml-auto" href="/">
+        <img class="block dark:hidden" src="/images/flyscrape.svg" alt="Flyscrape" height="30" width="30" />
+        <img class="hidden dark:block" src="/images/flyscrape-dark.svg" alt="Flyscrape" height="30" width="30" />
+      <span class="mx-2 font-extrabold inline select-none" title="Flyscrape">Flyscrape</span>
+    </a><a
+            title="Documentation"
+            href="/docs/getting-started"
+            
+            class="text-sm contrast-more:text-gray-700 contrast-more:dark:text-gray-100 relative -ml-2 hidden whitespace-nowrap py-2 px-3 md:inline-block text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <span class="text-center">Documentation</span>
+          </a>
+          <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://github.com/philippta/flyscrape" title="GitHub"><svg height=24 fill="currentColor" viewBox="3 3 18 18">
+  <path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path>
+</svg>
+<span class="sr-only">GitHub</span>
+          </a><button type="button" aria-label="Menu" class="hamburger-menu -mr-2 rounded p-2 active:bg-gray-400/20 md:hidden"><svg height=24 fill="none" viewBox="0 0 24 24" stroke="currentColor"><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8H20"></path></g><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16H20"></path></g></svg></button>
+  </nav>
+</div>
+
+  <div class='mx-auto flex max-w-screen-xl'>
+    <div class="mobile-menu-overlay [transition:background-color_1.5s_ease] fixed inset-0 z-10 bg-black/80 dark:bg-black/60 hidden"></div>
+<aside class="sidebar-container flex flex-col print:hidden md:top-16 md:shrink-0 md:w-64 md:self-start max-md:[transform:translate3d(0,-100%,0)] md:hidden">
+  
+  <div class="px-4 pt-4 md:hidden">
+    <div class="search-wrapper relative md:w-64">
+  <div class="relative flex items-center text-gray-900 contrast-more:text-gray-800 dark:text-gray-300 contrast-more:dark:text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input block w-full appearance-none rounded-lg px-3 py-2 transition-colors text-base leading-tight md:text-sm bg-black/[.05] dark:bg-gray-50/10 focus:bg-white dark:focus:bg-dark placeholder:text-gray-500 dark:placeholder:text-gray-400 contrast-more:border contrast-more:border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="absolute my-1.5 select-none ltr:right-1.5 rtl:left-1.5 h-5 rounded bg-white px-1.5 font-mono text-[10px] font-medium text-gray-500 border dark:border-gray-100/20 dark:bg-dark/50 contrast-more:border-current contrast-more:text-current contrast-more:dark:border-current items-center gap-1 transition-opacity pointer-events-none hidden sm:flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hidden border border-gray-200 bg-white text-gray-100 dark:border-neutral-800 dark:bg-neutral-900 absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-xl py-2.5 shadow-xl max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] inset-x-0 ltr:md:left-auto rtl:md:right-auto contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50 w-screen min-h-[100px] max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+
+  </div>
+  <div class="hextra-scrollbar overflow-y-auto overflow-x-hidden p-4 grow md:h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+    <ul class="flex flex-col gap-1 md:hidden">
+      
+      
+          <li class="open"><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/"
+    
+  >Documentation
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="origin-center transition-transform rtl:-rotate-180"></path></svg></span>
+    </a><div class="ltr:pr-0 overflow-hidden">
+        <ul class='relative flex flex-col gap-1 before:absolute before:inset-y-1 before:w-px before:bg-gray-200 before:content-[""] ltr:ml-3 ltr:pl-3 ltr:before:left-0 rtl:mr-3 rtl:pr-3 rtl:before:right-0 dark:before:bg-neutral-800'><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/getting-started/"
+    
+  >Getting Started
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/installation/"
+    
+  >Installation
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/full-example-script/"
+    
+  >Full Example Script
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/api-reference/"
+    
+  >API Reference
+    </a>
+              
+            </li><li class="flex flex-col open"><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/"
+    
+  >Configuration
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="origin-center transition-transform rtl:-rotate-180"></path></svg></span>
+    </a>
+              <div class="ltr:pr-0 overflow-hidden">
+        <ul class='relative flex flex-col gap-1 before:absolute before:inset-y-1 before:w-px before:bg-gray-200 before:content-[""] ltr:ml-3 ltr:pl-3 ltr:before:left-0 rtl:mr-3 rtl:pr-3 rtl:before:right-0 dark:before:bg-neutral-800'><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/starting-url/"
+    
+  >Starting URL
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/depth/"
+    
+  >Depth
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/domain-filter/"
+    
+  >Domain Filter
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/url-filter/"
+    
+  >URL Filter
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/link-following/"
+    
+  >Link Following
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/concurrency/"
+    
+  >Concurrency
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/rate-limiting/"
+    
+  >Rate Limiting
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/retry/"
+    
+  >Retry
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/caching/"
+    
+  >Caching
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/proxies/"
+    
+  >Proxies
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/cookies/"
+    
+  >Cookies
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/headers/"
+    
+  >Headers
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/browser-mode/"
+    
+  >Browser Mode
+    </a>
+              
+            </li><li class="flex flex-col "><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/docs/configuration/output/"
+    
+  >Output File and Format
+    </a>
+              
+            </li></ul>
+      </div>
+            </li></ul>
+      </div></li>
+          <li class="open"><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      sidebar-active-item bg-primary-100 font-semibold text-primary-800 contrast-more:border contrast-more:border-primary-500 dark:bg-primary-400/10 dark:text-primary-600 contrast-more:dark:border-primary-500"
+    href="/cloud/"
+    
+  >Flyscrape Cloud
+    </a>
+  </li>
+          <li class=""><a
+    class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+    href="/proxy/"
+    
+  >Flyscrape Proxyᴮᴱᵀᴬ
+    </a></li>
+    </ul>
+
+    </div>
+  
+  
+    <div class="md:hidden  sticky bottom-0 bg-white dark:bg-dark mx-4 py-4 shadow-[0_-12px_16px_#fff] flex items-center gap-2 dark:border-neutral-800 dark:shadow-[0_-12px_16px_#111] contrast-more:border-neutral-400 contrast-more:shadow-none contrast-more:dark:shadow-none border-t" data-toggle-animation="show"><div class="flex grow flex-col"><button
+  title="Change theme"
+  data-theme="light"
+  class="theme-toggle group h-7 rounded-md px-2 text-left text-xs font-medium text-gray-600 transition-colors dark:text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-primary-100/5 dark:hover:text-gray-50"
+  type="button"
+  aria-label="Change theme"
+>
+  <div class="flex items-center gap-2 capitalize"><svg height=12 class="group-data-[theme=light]:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hidden">Dark</span></div>
+</button>
+</div></div></aside>
+    <div class="w-full break-words min-h-[calc(100vh-var(--navbar-height))] min-w-0 pb-8 pt-8 md:pt-12 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-left),1.5rem)]">
+      <div class="flex flex-col items-start">
+        <!-- Hero Section -->
+<div class="max-w-2xl mx-auto text-center">
+    <h1 class="my-8 text-[3rem] lg:text-[4rem] leading-tight font-bold mx-auto">
+        Scraping at scale shouldn't be difficult.
+    </h1>
+
+    <p class="my-16 text-xl leading-relaxed text-gray-700 dark:text-gray-300">
+      Get the data you need without the complexity you don't.<br />
+      Flyscrape Cloud handles the scheduling, processing and infrastructure so you can focus on the data that matters to your business.
+    </p>
+
+    <div class="text-center flex flex-col md:block">
+        <a href="#early-access" 
+            class="inline-block px-8 py-3 md:mr-5 mb-5 md:mb-0 text-lg font-semibold text-center text-white transition-all duration-200 ease-in bg-black border-black border-2 rounded-full cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-white dark:text-black dark:border-white dark:focus:ring-primary-800">
+              Get Early Access
+        </a>
+    </div>
+</div>
+
+<!-- Video or Demo Section -->
+<div class="w-full max-w-4xl mx-auto my-16 rounded-md" style="background-image: url('/images/videobg.jpg'); background-size: cover;">
+  <img src="/images/flyscrape-cloud.min.png" style="display: block; margin: 0.5rem 0 -0.3rem 0" />
+    <!-- Add your demo video or screenshots here -->
+</div>
+
+<hr class="w-full hidden dark:block my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.2);" />
+<hr class="w-full dark:hidden my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.8);" />
+
+<!-- Feature Section 1: Infrastructure -->
+<div class="w-full mt-12 text-center lg:text-left">
+    <div class="gap-12 flex flex-col lg:grid lg:grid-cols-2">
+        <div>
+            <h2 class="py-2 mt-12 mb-8 text-4xl font-bold leading-none tracking-tighter text-black not-prose dark:text-white">
+                Focus on scripts, not servers.
+            </h2>
+            <p class="text-xl text-gray-800 dark:text-gray-300 sm:text-xl">
+                Write your Flyscrape scripts locally, then upload them to Flyscrape Cloud through our simple interface. We handle all the infrastructure, scaling, and reliability challenges while you focus on extracting the data your business needs
+            </p>
+        </div>
+        <!-- Add relevant image here -->
+        <div class="order-last lg:order-none">
+            <img src="/images/infrastructure.jpg" class="block rounded-lg w-full mx-auto" loading="lazy" />
+        </div>
+    </div>
+</div>
+
+<hr class="w-full hidden dark:block my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.2);" />
+<hr class="w-full dark:hidden my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.8);" />
+
+<!-- Feature Section 2: Scheduling -->
+<div class="gap-12 flex flex-col lg:grid lg:grid-cols-2">
+    <div class="order-last lg:order-first">
+        <!-- Add relevant image here -->
+        <img src="/images/scheduling.jpg" class="block rounded-lg w-full mx-auto" loading="lazy" />
+    </div>
+    <div>
+        <h2 class="py-2 mt-12 mb-8 text-4xl font-bold leading-none tracking-tighter text-black not-prose dark:text-white">
+            Schedule, run, repeat.
+        </h2>
+        <p class="text-xl text-gray-800 dark:text-gray-300 sm:text-xl">
+            Set up automated scraping schedules that run daily, weekly, or on custom intervals.
+            All your scraped data is securely stored and instantly accessible to your entire team.
+            Never worry about server availability or downtime again.
+        </p>
+    </div>
+</div>
+
+<hr class="w-full hidden dark:block my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.2);" />
+<hr class="w-full dark:hidden my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.8);" />
+
+<!-- Feature Section 3: Team Collaboration -->
+<div class="gap-12 flex flex-col lg:grid lg:grid-cols-2">
+    <div>
+        <h2 class="py-2 mt-12 mb-8 text-4xl font-bold leading-none tracking-tighter text-black not-prose dark:text-white">
+            Bridge technical and business teams.
+        </h2>
+        <p class="text-xl text-gray-800 dark:text-gray-300 sm:text-xl">
+            Engineers build the scraping scripts, analysts transform and query the data with SQL,
+            and business teams export the insights they need. Flyscrape Cloud creates a unified
+            workflow that makes web data accessible across your entire organization.
+        </p>
+    </div>
+    <!-- Add relevant image here -->
+    <div class="order-last lg:order-none">
+        <img src="/images/collaboration.jpg" class="block rounded-lg w-full mx-auto" loading="lazy" />
+    </div>
+</div>
+
+<hr class="w-full hidden dark:block my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.2);" />
+<hr class="w-full dark:hidden my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.8);" />
+
+<!-- Feature Section 4: Advanced Infrastructure -->
+<div class="gap-12 flex flex-col lg:grid lg:grid-cols-2">
+    <div class="order-last lg:order-first">
+        <!-- Add relevant image here -->
+        <img src="/images/proxies.jpg" class="block rounded-lg w-full mx-auto" loading="lazy" />
+    </div>
+    <div>
+        <h2 class="py-2 mt-12 mb-8 text-4xl font-bold leading-none tracking-tighter text-black not-prose dark:text-white">
+            Built for the toughest scraping challenges.
+        </h2>
+        <p class="text-xl text-gray-800 dark:text-gray-300 sm:text-xl">
+            Access our managed proxy network and browser rendering capabilities to scrape even the
+            most challenging sites. We handle IP rotation, browser fingerprinting, and all the 
+            technical complexities of modern web scraping at scale.
+        </p>
+    </div>
+</div>
+
+<hr class="w-full hidden dark:block my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.2);" />
+<hr class="w-full dark:hidden my-24" style="border-color: hsl(var(--primary-hue) var(--primary-saturation) 94% / 0.8);" />
+
+<!-- Use Cases Section -->
+<div class="w-full text-center">
+    <h2 class="py-2 mb-16 text-4xl font-bold leading-none tracking-tighter text-black not-prose dark:text-white">
+        How Teams Use Flyscrape Cloud
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Use Case 1 -->
+        <div class="p-6 border border-gray-300 dark:border-gray-700 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">E-Commerce Price Monitoring</h3>
+            <p>Track competitor prices across thousands of products daily. Make informed pricing
+               decisions based on real market data.</p>
+        </div>
+        
+        <!-- Use Case 2 -->
+        <div class="p-6 border border-gray-300 dark:border-gray-700 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">Market Intelligence</h3>
+            <p>Monitor industry news, product launches, and competitor moves automatically.
+               Stay ahead with timely, structured market data.</p>
+        </div>
+        
+        <!-- Use Case 3 -->
+        <div class="p-6 border border-gray-300 dark:border-gray-700 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">Content Aggregation</h3>
+            <p>Collect relevant content from multiple sources on a schedule. Transform and 
+               analyze the data to identify trends and opportunities.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Early Access Section -->
+<div id="early-access" class="w-full my-24 max-w-2xl mx-auto text-center">
+    <h2 class="py-2 mt-12 mb-8 text-4xl font-bold leading-none tracking-tighter text-black not-prose dark:text-white">
+        Get Early Access
+    </h2>
+    <p class="text-xl text-gray-800 dark:text-gray-300 mb-12">
+        We're currently onboarding select companies to our early access program.
+        Join now to get personalized onboarding and influence our product roadmap.
+    </p>
+    
+    <form class="mx-auto max-w-lg">
+        <div class="mb-4">
+            <input type="email" placeholder="Your Email" class="w-full p-3 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <input type="text" placeholder="Company Name" class="w-full p-3 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <textarea placeholder="Tell us about your web scraping needs" class="w-full p-3 border rounded-md" rows="4"></textarea>
+        </div>
+        <button type="submit" class="inline-block px-8 py-3 text-lg font-semibold text-center text-white transition-all duration-200 ease-in bg-black rounded-full cursor-pointer">
+            Request Access
+        </button>
+    </form>
+</div>
+
+<!-- FAQ Section -->
+<div class="w-full my-24 max-w-2xl mx-auto">
+    <h2 class="py-2 mt-12 mb-16 text-4xl font-bold leading-none tracking-tighter text-black not-prose dark:text-white text-center">
+        Frequently Asked Questions
+    </h2>
+    
+    <div class="divide-y">
+        <!-- FAQ Item 1 -->
+        <div class="py-6">
+            <h3 class="text-xl font-bold mb-2">How does Flyscrape Cloud differ from using Flyscrape open-source?</h3>
+            <p>Flyscrape Cloud provides the infrastructure, scheduling, storage, and team collaboration features needed to run your Flyscrape scripts at scale. You write scripts locally using the open-source tool, then deploy them to our cloud platform for reliable execution.</p>
+        </div>
+        
+        <!-- FAQ Item 2 -->
+        <div class="py-6">
+            <h3 class="text-xl font-bold mb-2">What size companies is Flyscrape Cloud designed for?</h3>
+            <p>We've designed Flyscrape Cloud for small to medium-sized businesses that need reliable web scraping but don't want to invest in building and maintaining their own infrastructure. Our platform scales with your needs.</p>
+        </div>
+        
+        <!-- FAQ Item 3 -->
+        <div class="py-6">
+            <h3 class="text-xl font-bold mb-2">How does pricing work?</h3>
+            <p>Pricing is based on usage volume, with plans starting for small teams and scaling up as your needs grow. Early access participants receive preferred pricing. Contact us for details specific to your use case.</p>
+        </div>
+        
+        <!-- FAQ Item 4 -->
+        <div class="py-6">
+            <h3 class="text-xl font-bold mb-2">What kind of support is provided?</h3>
+            <p>Early access customers receive personalized onboarding and dedicated support to ensure your scraping operations run smoothly. We work closely with you to configure the platform for your specific needs.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="w-full py-12 bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-6 md:mb-0">
+                <img src="/images/logo.png" alt="Flyscrape Cloud" class="h-10">
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://github.com/philippta/flyscrape" class="text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">
+                    GitHub
+                </a>
+                <a href="https://flyscrape.com/docs" class="text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">
+                    Documentation
+                </a>
+                <a href="mailto:contact@flyscrape.com" class="text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">
+                    Contact
+                </a>
+            </div>
+        </div>
+        <div class="mt-8 text-center text-gray-600 dark:text-gray-400">
+            &copy; 2025 Flyscrape. All rights reserved.
+        </div>
+    </div>
+</footer>
+
+      </div>
+    </div>
+  </div>
+
+  </body>
+  <script defer src="/js/main.min.5250a01f9a9cabefdb65e77efc7c04221397882cded9c5c058a5504e730b11b3.js" integrity="sha256-UlCgH5qcq&#43;/bZed&#43;/HwEIhOXiCze2cXAWKVQTnMLEbM="></script>
+
+
+<script defer src="/lib/flexsearch/flexsearch.bundle.min.0425860527cc9968f9f049421c7a56b39327d475e2e3a8f550416be3a9134327.js" integrity="sha256-BCWGBSfMmWj58ElCHHpWs5Mn1HXi46j1UEFr46kTQyc="></script>
+    <script defer src="/en.search.min.9afdc7c586c6f971dd94df10b989f10faaf38e5702571fd8cfc9ff9135c2d495.js" integrity="sha256-mv3HxYbG&#43;XHdlN8QuYnxD6rzjlcCVx/Yz8n/kTXC1JU="></script>
+
+
+</html>

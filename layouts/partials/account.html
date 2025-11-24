@@ -1,0 +1,13 @@
+<a
+    id="btn-signup"
+    href="https://app.flyscrape.com/login"
+    class="block ml-3 px-3 py-1 text-sm font-semibold text-center text-white transition-all duration-200 ease-in bg-black rounded-full cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-white dark:text-black dark:focus:ring-primary-800 whitespace-nowrap"
+    >
+    <span id="btn-signup-large" class="hidden md:inline">Sign In to Flyscrape Proxy</span>
+    <span id="btn-signup-small" class="md:hidden">Flyscrape Proxy</span>
+</a>
+<script>
+  if (document.cookie.includes("session=")) {
+    document.getElementById("btn-signup-large").innerText = "Open Flyscrape Proxy";
+  }
+</script>

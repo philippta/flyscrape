@@ -1,0 +1,68 @@
+baseURL: https://flyscrape.com/
+languageCode: en-us
+title: Flyscrape
+
+enableRobotsTXT: true
+
+module:
+  imports:
+    - path: github.com/imfing/hextra
+
+build:
+  buildStats:
+    enable: true
+
+menu:
+  main:
+    - name: Documentation
+      pageRef: /docs/getting-started
+      weight: 1
+    # - name: Need Proxies?
+    #   weight: 2
+    #   url: /proxy
+    - name: GitHub
+      weight: 3
+      url: https://github.com/philippta/flyscrape
+      params:
+        icon: github
+    # - name: Account
+    #   weight: 4
+    #   params:
+    #     type: account
+params:
+  description: A modern toolkit for building custom scrapers in minutes.
+
+  navbar:
+    displayTitle: false
+    displayLogo: true
+    logo:
+      path: images/flyscrape.svg
+      dark: images/flyscrape-dark.svg
+      link: /
+      width: 30
+      height: 30
+
+  theme:
+    # light | dark | system
+    default: system
+    displayToggle: true
+
+  search:
+    enable: true
+    type: flexsearch
+
+    flexsearch:
+      # index page by: content | summary | heading | title
+      index: content
+
+  footer:
+    enable: false
+    displayPoweredBy: false
+
+markup:
+  highlight:
+    # style: github-dark
+    noClasses: false
+  goldmark:
+    renderer:
+      unsafe: true

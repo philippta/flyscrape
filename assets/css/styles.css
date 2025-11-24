@@ -1,0 +1,42 @@
+@import "tailwind.css";
+
+@import "typography.css";
+@import "highlight.css";
+@import "components/cards.css";
+@import "components/steps.css";
+@import "components/search.css";
+@import "components/sidebar.css";
+@import "components/navbar.css";
+@import "components/scrollbar.css";
+@import "components/code-copy.css";
+
+html {
+  @apply text-base antialiased;
+  font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  @apply w-full bg-white dark:bg-dark dark:text-gray-100;
+  line-height: 1.75;
+}
+
+:root {
+  --primary-hue: 212deg;
+  --primary-saturation: 100%;
+  --navbar-height: 4rem;
+  --menu-height: 3.75rem;
+}
+
+.dark {
+  --primary-hue: 204deg;
+  --primary-saturation: 100%;
+}
+
+.code-block {
+    line-height: 1.75;
+}
+
+.home-code .code-block {
+    margin-top: 0!important;
+}

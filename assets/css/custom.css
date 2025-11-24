@@ -1,0 +1,9 @@
+:is(html[class~="dark"] .sidebar-container),
+:is(html[class~="dark"] body) {
+  background-color: black;
+}
+
+:is(html[class~="dark"] .dark\:bg-dark),
+:is(html[class~="dark"] .nav-container-blur) {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}

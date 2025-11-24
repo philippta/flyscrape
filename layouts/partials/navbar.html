@@ -1,0 +1,69 @@
+{{- $logoPath := .Site.Params.navbar.logo.path | default "images/logo.svg" -}}
+{{- $logoLink := .Site.Params.navbar.logo.link | default .Site.Home.RelPermalink -}}
+{{- $logoWidth := .Site.Params.navbar.logo.width | default "20" -}}
+{{- $logoHeight := .Site.Params.navbar.logo.height | default "20" -}}
+{{- $logoDarkPath := .Site.Params.navbar.logo.dark | default $logoPath -}}
+
+{{- $navWidth := "max-w-[90rem]" -}}
+{{- with .Site.Params.navbar.width -}}
+  {{ if eq . "normal" -}}
+    {{ $navWidth = "max-w-screen-xl" -}}
+  {{ else if eq . "full" -}}
+    {{ $navWidth = "max-w-full" -}}
+  {{ end -}}
+{{- end -}}
+
+<div class="nav-container sticky top-0 z-20 w-full bg-transparent print:hidden">
+  <div class="nav-container-blur pointer-events-none absolute z-[-1] h-full w-full bg-white dark:bg-dark shadow-[0_2px_4px_rgba(0,0,0,.02),0_1px_0_rgba(0,0,0,.06)] contrast-more:shadow-[0_0_0_1px_#000] dark:shadow-[0_-1px_0_rgba(255,255,255,.1)_inset] contrast-more:dark:shadow-[0_0_0_1px_#fff]"></div>
+
+  <nav class="mx-auto flex items-center justify-end h-16 px-6 {{ $navWidth }}">
+    <a class="flex items-center hover:opacity-75 ltr:mr-auto rtl:ml-auto" href="{{ $logoLink }}">
+      {{- if (.Site.Params.navbar.displayLogo | default true) }}
+        <img class="block dark:hidden" src="{{ $logoPath | relURL }}" alt="{{ .Site.Title }}" height="{{ $logoHeight }}" width="{{ $logoWidth }}" />
+        <img class="hidden dark:block" src="{{ $logoDarkPath | relURL }}" alt="{{ .Site.Title }}" height="{{ $logoHeight }}" width="{{ $logoWidth }}" />
+      {{- end }}
+      <span class="mx-2 font-extrabold inline select-none" title="Flyscrape">Flyscrape</span>
+    </a>
+
+    {{- $currentPage := . -}}
+    {{- range .Site.Menus.main -}}
+      {{- if eq .Params.type "search" -}}
+        {{- partial "search.html" (dict "params" .Params) -}}
+      {{- else if eq .Params.type "account" -}}
+        {{- partial "account.html" (dict "params" .Params) -}}
+      {{- else -}}
+        {{- $link := .URL -}}
+        {{- $external := strings.HasPrefix $link "http" -}}
+        {{- with .PageRef -}}
+          {{- if hasPrefix . "/" -}}
+            {{- $link = relLangURL (strings.TrimPrefix "/" .) -}}
+          {{- end -}}
+        {{- end -}}
+
+        {{/* Display icon menu item */}}
+        {{- if .Params.icon -}}
+          {{- $rel := cond (eq .Params.icon "mastodon") "noreferer me" "noreferer" }}
+          <a class="p-2 text-current" {{ if $external }}target="_blank" rel="{{ $rel }}"{{ end }} href="{{ $link }}" title="{{ or (T .Identifier) .Name | safeHTML }}">
+            {{- partial "utils/icon.html" (dict "name" .Params.icon "attributes" "height=24") -}}
+            <span class="sr-only">{{ or (T .Identifier) .Name | safeHTML }}</span>
+          </a>
+        {{- else -}}
+          {{- $active := or ($currentPage.HasMenuCurrent "main" .) ($currentPage.IsMenuCurrent "main" .) -}}
+          {{- $activeClass := cond $active "font-medium" "text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" -}}
+          <a
+            title="{{ or (T .Identifier) .Name | safeHTML }}"
+            href="{{ $link }}"
+            {{ if $external }}target="_blank" rel="noreferer"{{ end }}
+            class="text-sm contrast-more:text-gray-700 contrast-more:dark:text-gray-100 relative -ml-2 hidden whitespace-nowrap py-2 px-3 md:inline-block {{ $activeClass }}"
+          >
+            <span class="text-center">{{ or (T .Identifier) .Name | safeHTML }}</span>
+          </a>
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+
+    <button type="button" aria-label="Menu" class="hamburger-menu -mr-2 rounded p-2 active:bg-gray-400/20 md:hidden">
+      {{- partial "utils/icon.html" (dict "name" "hamburger-menu" "attributes" "height=24") -}}
+    </button>
+  </nav>
+</div>

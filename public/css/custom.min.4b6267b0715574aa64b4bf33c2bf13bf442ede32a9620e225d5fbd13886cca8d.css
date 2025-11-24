@@ -1,0 +1,1 @@
+:is(html[class~=dark] body){background-color:#000}:is(html[class~=dark] .dark\:bg-dark),:is(html[class~=dark] .nav-container-blur){background-color:rgba(0,0,0,.8)!important}
